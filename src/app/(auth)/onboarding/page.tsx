@@ -15,6 +15,7 @@ export default function OnboardingPage() {
   const { update } = useSession();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Step 1: Basics
   const [lmpDate, setLmpDate] = useState('');
@@ -87,7 +88,8 @@ export default function OnboardingPage() {
       router.push('/dashboard');
     } catch (error) {
       console.error('Error saving profile:', error);
-      alert('Something went wrong. Please try again.');
+      setErrorMsg('Something went wrong. Please check your connection and try again.');
+      setTimeout(() => setErrorMsg(null), 4000);
     } finally {
       setSaving(false);
     }
@@ -319,6 +321,12 @@ export default function OnboardingPage() {
           </button>
         </div>
       </div>
+
+      {errorMsg && (
+        <div className={styles.toastError}>
+          {errorMsg}
+        </div>
+      )}
     </div>
   );
 }

@@ -169,3 +169,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+.toastError {
+  position: fixed;
+  bottom: var(--space-8);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-danger);
+  color: white;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-toast);
+  animation: fadeInUp var(--transition-base) forwards;
+}

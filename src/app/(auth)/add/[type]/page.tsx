@@ -20,7 +20,13 @@ export default function AddRecordFormPage({
   const [uploading, setUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [formData, setFormData] = useState<Record<string, string>>({});
+
+  const showError = (msg: string) => {
+    setErrorMessage(msg);
+    setTimeout(() => setErrorMessage(null), 4000);
+  };
 
   const recordType = RECORD_TYPES.find((r) => r.key === type);
   if (!recordType) {
@@ -36,7 +42,7 @@ export default function AddRecordFormPage({
     if (!file) return;
 
     if (file.size > 10 * 1024 * 1024) {
-      alert('File size exceeds 10MB limit.');
+      showError('File size exceeds 10MB limit.');
       return;
     }
 
@@ -61,7 +67,7 @@ export default function AddRecordFormPage({
       setUploadedFileName(file.name);
     } catch (err: unknown) {
       console.error('File upload error:', err);
-      alert('Failed to upload file to Google Drive. Please try again.');
+      showError('Failed to upload file to Google Drive. Please try again.');
     } finally {
       setUploading(false);
     }
@@ -92,7 +98,7 @@ export default function AddRecordFormPage({
       }, 1200);
     } catch (error) {
       console.error('Error saving record:', error);
-      alert('Failed to save. Please try again.');
+      showError('Failed to save. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -150,6 +156,12 @@ export default function AddRecordFormPage({
         <div className={formStyles.toast}>
           <Check size={16} />
           Record saved successfully
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className={`${formStyles.toast} ${formStyles.toastError}`}>
+          {errorMessage}
         </div>
       )}
     </div>

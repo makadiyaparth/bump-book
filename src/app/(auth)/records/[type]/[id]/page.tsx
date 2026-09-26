@@ -36,6 +36,7 @@ export default function RecordDetailPage({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isToastError, setIsToastError] = useState(false);
 
   const recordType = RECORD_TYPES.find((r) => r.key === type);
 
@@ -66,9 +67,10 @@ export default function RecordDetailPage({
     loadRecord();
   }, [session, recordType, id]);
 
-  const showToast = (msg: string) => {
+  const showToast = (msg: string, isError = false) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 2500);
+    setIsToastError(isError);
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleUpdate = async () => {
@@ -89,7 +91,7 @@ export default function RecordDetailPage({
       showToast('Record updated successfully');
     } catch (err) {
       console.error('Error updating record:', err);
-      alert('Failed to update record. Please try again.');
+      showToast('Failed to update record. Please try again.', true);
     } finally {
       setIsSaving(false);
     }
@@ -109,7 +111,7 @@ export default function RecordDetailPage({
       router.push(`/records/${type}`);
     } catch (err) {
       console.error('Error deleting record:', err);
-      alert('Failed to delete record. Please try again.');
+      showToast('Failed to delete record. Please try again.', true);
       setIsDeleting(false);
       setShowDeleteModal(false);
     }
@@ -390,10 +392,10 @@ export default function RecordDetailPage({
         </div>
       )}
 
-      {/* Success Toast */}
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className={formStyles.toast}>
-          <Check size={16} />
+        <div className={`${formStyles.toast} ${isToastError ? formStyles.toastError : ''}`}>
+          {!isToastError && <Check size={16} />}
           {toastMessage}
         </div>
       )}
