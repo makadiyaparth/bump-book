@@ -11,7 +11,7 @@ import { SHEET_HEADERS } from '@/lib/types';
 
 export async function PUT(
   req: NextRequest,
-  ctx: RouteContext<'/api/sheets/[tab]/[id]'>
+  { params }: { params: Promise<{ tab: string; id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { tab, id } = await ctx.params;
+    const { tab, id } = await params;
 
     if (!SHEET_HEADERS[tab]) {
       return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
@@ -47,7 +47,7 @@ export async function PUT(
 
 export async function DELETE(
   _req: NextRequest,
-  ctx: RouteContext<'/api/sheets/[tab]/[id]'>
+  { params }: { params: Promise<{ tab: string; id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -55,7 +55,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { tab, id } = await ctx.params;
+    const { tab, id } = await params;
 
     if (!SHEET_HEADERS[tab]) {
       return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
