@@ -49,7 +49,6 @@ export default function TimelinePage() {
           const pregData = await pregRes.json();
           if (pregData.data?.[0]?.lmp_date) {
             userLmp = pregData.data[0].lmp_date;
-            setLmpDate(userLmp);
           }
         } catch {
           // ignore
