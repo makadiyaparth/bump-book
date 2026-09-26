@@ -6,6 +6,44 @@
 import { google } from 'googleapis';
 import { SHEET_HEADERS, SHEET_TABS } from './types';
 
+// In-memory cache for user's spreadsheetId to avoid repeated Drive API calls
+const spreadsheetCache = new Map<string, string>();
+
+export function setCachedSpreadsheetId(key: string, id: string): void {
+  spreadsheetCache.set(key, id);
+}
+
+export function getCachedSpreadsheetId(key: string): string | undefined {
+  return spreadsheetCache.get(key);
+}
+
+export async function resolveSpreadsheetId(
+  accessToken: string,
+  userEmail?: string | null,
+  knownSpreadsheetId?: string | null
+): Promise<string | null> {
+  if (knownSpreadsheetId) {
+    if (userEmail) spreadsheetCache.set(userEmail, knownSpreadsheetId);
+    return knownSpreadsheetId;
+  }
+
+  const cacheKey = userEmail || accessToken;
+  const cached = spreadsheetCache.get(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const found = await SheetsService.findExistingSpreadsheet(accessToken);
+    if (found) {
+      spreadsheetCache.set(cacheKey, found);
+      if (userEmail) spreadsheetCache.set(userEmail, found);
+      return found;
+    }
+  } catch (error) {
+    console.error('Error resolving spreadsheet ID:', error);
+  }
+  return null;
+}
+
 export class SheetsService {
   private sheets;
   private spreadsheetId: string;

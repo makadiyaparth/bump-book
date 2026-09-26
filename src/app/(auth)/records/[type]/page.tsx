@@ -28,7 +28,7 @@ export default function RecordTypeListPage({
 
   useEffect(() => {
     async function loadData() {
-      if (!session?.accessToken || !session?.spreadsheetId || !recordType) {
+      if (!session?.accessToken || !recordType) {
         setLoading(false);
         return;
       }

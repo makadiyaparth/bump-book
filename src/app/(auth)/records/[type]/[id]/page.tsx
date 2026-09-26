@@ -40,7 +40,7 @@ export default function RecordDetailPage({
 
   useEffect(() => {
     async function loadRecord() {
-      if (!session?.accessToken || !session?.spreadsheetId || !recordType) {
+      if (!session?.accessToken || !recordType) {
         setLoading(false);
         return;
       }

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { SheetsService } from '@/lib/sheets';
+import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
 
 export async function GET(
@@ -15,8 +15,21 @@ export async function GET(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.accessToken || !session?.spreadsheetId) {
+    if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const spreadsheetId = await resolveSpreadsheetId(
+      session.accessToken,
+      session.user?.email,
+      session.spreadsheetId
+    );
+
+    if (!spreadsheetId) {
+      return NextResponse.json(
+        { error: 'Spreadsheet not found. Please complete setup.' },
+        { status: 404 }
+      );
     }
 
     const { tab } = await params;
@@ -25,7 +38,7 @@ export async function GET(
       return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
     }
 
-    const service = new SheetsService(session.accessToken, session.spreadsheetId);
+    const service = new SheetsService(session.accessToken, spreadsheetId);
     const rows = await service.getRows(tab);
 
     return NextResponse.json({ data: rows });
@@ -44,8 +57,21 @@ export async function POST(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.accessToken || !session?.spreadsheetId) {
+    if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const spreadsheetId = await resolveSpreadsheetId(
+      session.accessToken,
+      session.user?.email,
+      session.spreadsheetId
+    );
+
+    if (!spreadsheetId) {
+      return NextResponse.json(
+        { error: 'Spreadsheet not found. Please complete setup.' },
+        { status: 404 }
+      );
     }
 
     const { tab } = await params;
@@ -56,7 +82,7 @@ export async function POST(
 
     const body = await req.json();
 
-    const service = new SheetsService(session.accessToken, session.spreadsheetId);
+    const service = new SheetsService(session.accessToken, spreadsheetId);
     await service.appendRow(tab, body);
 
     return NextResponse.json({ success: true });
@@ -68,3 +94,4 @@ export async function POST(
     );
   }
 }
+

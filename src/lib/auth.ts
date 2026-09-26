@@ -6,82 +6,117 @@
 import type { AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
-// Extend the built-in session types to include our custom fields
-declare module 'next-auth' {
-  interface Session {
-    accessToken?: string;
-    refreshToken?: string;
-    spreadsheetId?: string;
-    error?: string;
-  }
-}
+import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
+ 
+ // Extend the built-in session types to include our custom fields
+ declare module 'next-auth' {
+   interface Session {
+     accessToken?: string;
+     refreshToken?: string;
+     spreadsheetId?: string;
+     error?: string;
+   }
+ }
 
-declare module 'next-auth/jwt' {
-  interface JWT {
-    accessToken?: string;
-    refreshToken?: string;
-    accessTokenExpires?: number;
-    spreadsheetId?: string;
-    error?: string;
-  }
-}
+ declare module 'next-auth/jwt' {
+   interface JWT {
+     accessToken?: string;
+     refreshToken?: string;
+     accessTokenExpires?: number;
+     spreadsheetId?: string;
+     error?: string;
+   }
+ }
 
-const GOOGLE_SCOPES = [
-  'openid',
-  'email',
-  'profile',
-  'https://www.googleapis.com/auth/spreadsheets',
-  'https://www.googleapis.com/auth/drive.file',
-].join(' ');
+ const GOOGLE_SCOPES = [
+   'openid',
+   'email',
+   'profile',
+   'https://www.googleapis.com/auth/spreadsheets',
+   'https://www.googleapis.com/auth/drive.file',
+ ].join(' ');
 
-export const authOptions: AuthOptions = {
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: GOOGLE_SCOPES,
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    }),
-  ],
+ export const authOptions: AuthOptions = {
+   providers: [
+     GoogleProvider({
+       clientId: process.env.GOOGLE_CLIENT_ID!,
+       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+       authorization: {
+         params: {
+           scope: GOOGLE_SCOPES,
+           access_type: 'offline',
+           prompt: 'consent',
+         },
+       },
+     }),
+   ],
 
-  session: {
-    strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-  },
+   session: {
+     strategy: 'jwt',
+     maxAge: 30 * 24 * 60 * 60, // 30 days
+   },
 
-  callbacks: {
-    async jwt({ token, account }) {
-      // On initial sign-in, persist Google tokens
-      if (account) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.accessTokenExpires = account.expires_at
-          ? account.expires_at * 1000
-          : Date.now() + 3600 * 1000;
-      }
+   callbacks: {
+     async jwt({ token, account, trigger, session }) {
+       // On initial sign-in, persist Google tokens
+       if (account) {
+         token.accessToken = account.access_token;
+         token.refreshToken = account.refresh_token;
+         token.accessTokenExpires = account.expires_at
+           ? account.expires_at * 1000
+           : Date.now() + 3600 * 1000;
+       }
 
-      // If access token hasn't expired, return as-is
-      if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
-        return token;
-      }
+       // Handle session update (e.g. await update({ spreadsheetId }))
+       if (trigger === 'update' && session?.spreadsheetId) {
+         token.spreadsheetId = session.spreadsheetId;
+         if (token.email) {
+           setCachedSpreadsheetId(token.email as string, session.spreadsheetId);
+         }
+       }
 
-      // Access token expired — try to refresh
-      return await refreshAccessToken(token);
-    },
+       // Attempt to resolve spreadsheetId if not already stored in token
+       if (!token.spreadsheetId && token.accessToken) {
+         const id = await resolveSpreadsheetId(
+           token.accessToken,
+           token.email as string | undefined
+         );
+         if (id) {
+           token.spreadsheetId = id;
+         }
+       }
 
-    async session({ session, token }) {
-      session.accessToken = token.accessToken;
-      session.refreshToken = token.refreshToken;
-      session.spreadsheetId = token.spreadsheetId;
-      session.error = token.error;
-      return session;
-    },
-  },
+       // If access token hasn't expired, return as-is
+       if (token.accessTokenExpires && Date.now() < token.accessTokenExpires) {
+         return token;
+       }
+
+       // Access token expired — try to refresh
+       return await refreshAccessToken(token);
+     },
+
+     async session({ session, token }) {
+       session.accessToken = token.accessToken;
+       session.refreshToken = token.refreshToken;
+       session.spreadsheetId = token.spreadsheetId;
+       session.error = token.error;
+
+       // If session doesn't have spreadsheetId yet, resolve dynamically
+       if (!session.spreadsheetId && session.accessToken) {
+         const id = await resolveSpreadsheetId(
+           session.accessToken,
+           session.user?.email,
+           token.spreadsheetId
+         );
+         if (id) {
+           session.spreadsheetId = id;
+           token.spreadsheetId = id;
+         }
+       }
+
+       return session;
+     },
+   },
 
   pages: {
     signIn: '/',

@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { SheetsService } from '@/lib/sheets';
+import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
 
 export async function PUT(
@@ -15,8 +15,21 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.accessToken || !session?.spreadsheetId) {
+    if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const spreadsheetId = await resolveSpreadsheetId(
+      session.accessToken,
+      session.user?.email,
+      session.spreadsheetId
+    );
+
+    if (!spreadsheetId) {
+      return NextResponse.json(
+        { error: 'Spreadsheet not found. Please complete setup.' },
+        { status: 404 }
+      );
     }
 
     const { tab, id } = await params;
@@ -26,7 +39,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const service = new SheetsService(session.accessToken, session.spreadsheetId);
+    const service = new SheetsService(session.accessToken, spreadsheetId);
 
     const found = await service.findRowById(tab, id);
     if (!found) {
@@ -51,8 +64,21 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.accessToken || !session?.spreadsheetId) {
+    if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const spreadsheetId = await resolveSpreadsheetId(
+      session.accessToken,
+      session.user?.email,
+      session.spreadsheetId
+    );
+
+    if (!spreadsheetId) {
+      return NextResponse.json(
+        { error: 'Spreadsheet not found. Please complete setup.' },
+        { status: 404 }
+      );
     }
 
     const { tab, id } = await params;
@@ -61,7 +87,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
     }
 
-    const service = new SheetsService(session.accessToken, session.spreadsheetId);
+    const service = new SheetsService(session.accessToken, spreadsheetId);
 
     const found = await service.findRowById(tab, id);
     if (!found) {
@@ -79,3 +105,4 @@ export async function DELETE(
     );
   }
 }
+

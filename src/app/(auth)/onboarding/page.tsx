@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
 import { generateId, now, today } from '@/lib/utils';
@@ -11,6 +12,7 @@ const TOTAL_STEPS = 3;
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const { update } = useSession();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
 
@@ -48,6 +50,10 @@ export default function OnboardingPage() {
 
       if (!initRes.ok) {
         throw new Error(initData.error || 'Failed to initialize');
+      }
+
+      if (update && initData.spreadsheetId) {
+        await update({ spreadsheetId: initData.spreadsheetId });
       }
 
       // Save pregnancy profile

@@ -30,7 +30,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function fetchData() {
-      if (!session?.accessToken || !session?.spreadsheetId) {
+      if (!session?.accessToken) {
         setLoading(false);
         return;
       }

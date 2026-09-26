@@ -38,7 +38,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     async function loadSettings() {
-      if (!session?.accessToken || !session?.spreadsheetId) {
+      if (!session?.accessToken) {
         setLoading(false);
         return;
       }

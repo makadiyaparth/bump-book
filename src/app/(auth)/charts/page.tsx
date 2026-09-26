@@ -58,7 +58,7 @@ export default function ChartsPage() {
 
   useEffect(() => {
     async function loadData() {
-      if (!session?.accessToken || !session?.spreadsheetId) {
+      if (!session?.accessToken) {
         setLoading(false);
         return;
       }

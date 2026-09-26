@@ -36,7 +36,7 @@ export default function TimelinePage() {
 
   useEffect(() => {
     async function loadTimelineData() {
-      if (!session?.accessToken || !session?.spreadsheetId) {
+      if (!session?.accessToken) {
         setLoading(false);
         return;
       }

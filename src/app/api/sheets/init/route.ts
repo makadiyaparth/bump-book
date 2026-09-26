@@ -6,7 +6,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { SheetsService } from '@/lib/sheets';
+import { SheetsService, setCachedSpreadsheetId } from '@/lib/sheets';
 import { DriveService } from '@/lib/drive';
 
 export async function POST() {
@@ -30,6 +30,11 @@ export async function POST() {
         userName
       );
     }
+
+    if (session.user?.email) {
+      setCachedSpreadsheetId(session.user.email, spreadsheetId);
+    }
+    setCachedSpreadsheetId(session.accessToken, spreadsheetId);
 
     // Check if Drive folder exists, create if not
     const driveService = new DriveService(session.accessToken);
