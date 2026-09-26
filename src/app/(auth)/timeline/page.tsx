@@ -12,6 +12,7 @@ import {
 import { formatDateShort, groupBy } from '@/lib/utils';
 import { RECORD_TYPES } from '@/lib/types';
 import type { RecordType } from '@/lib/types';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
 
 interface TimelineItem {
@@ -24,7 +25,7 @@ interface TimelineItem {
   icon: string;
   color: string;
   driveLink?: string;
-  pregnancyWeek?: number;
+  pregnancyWeek?: string;
 }
 
 export default function TimelinePage() {
@@ -54,11 +55,14 @@ export default function TimelinePage() {
           // ignore
         }
 
-        const calcWeek = (dateStr: string): number | undefined => {
+        const calcWeek = (dateStr: string): string | undefined => {
           if (!userLmp || !dateStr) return undefined;
           const diffMs = new Date(dateStr).getTime() - new Date(userLmp).getTime();
-          const weeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000));
-          return weeks >= 0 && weeks <= 42 ? weeks : undefined;
+          const totalDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+          if (totalDays < 0 || totalDays > 300) return undefined;
+          const weeks = Math.floor(totalDays / 7);
+          const days = totalDays % 7;
+          return days > 0 ? `Week ${weeks} + ${days}d` : `Week ${weeks}`;
         };
 
         const timelineList: TimelineItem[] = [];
@@ -369,9 +373,12 @@ export default function TimelinePage() {
 
       {/* Content */}
       {loading ? (
-        <div className={styles.loadingState}>
-          <p>Loading your journey timeline...</p>
-        </div>
+        <JourneyLoader
+          message="Loading your journey timeline..."
+          subMessage="Organizing your visits, tests, and baby milestones"
+          cycle
+          size="card"
+        />
       ) : filteredItems.length === 0 ? (
         <div className={styles.emptyState}>
           <span className={styles.emptyEmoji}>📖</span>
@@ -422,9 +429,9 @@ export default function TimelinePage() {
                           <span className={styles.dateText}>
                             {item.date ? formatDateShort(item.date) : 'Undated'}
                           </span>
-                          {item.pregnancyWeek !== undefined && (
+                          {item.pregnancyWeek && (
                             <span className={styles.weekTag}>
-                              Week {item.pregnancyWeek}
+                              {item.pregnancyWeek}
                             </span>
                           )}
                         </div>

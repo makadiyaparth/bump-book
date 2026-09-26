@@ -12,6 +12,7 @@ import {
   Heart,
 } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
 import formStyles from '@/styles/forms.module.css';
 
@@ -203,9 +204,12 @@ export default function SettingsPage() {
           </div>
 
           {loading ? (
-            <p style={{ color: 'var(--color-text-tertiary)', fontSize: 'var(--font-size-sm)' }}>
-              Loading profile details...
-            </p>
+            <JourneyLoader
+              message="Loading profile details..."
+              subMessage="Retrieving your profile from Google Sheets"
+              cycle
+              size="compact"
+            />
           ) : (
             <div>
               <div className={styles.fieldRow}>

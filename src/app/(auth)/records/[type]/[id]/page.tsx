@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { RECORD_TYPES } from '@/lib/types';
 import { formatDate } from '@/lib/utils';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from '../../records.module.css';
 import formStyles from '@/styles/forms.module.css';
 
@@ -132,11 +133,12 @@ export default function RecordDetailPage({
   if (loading) {
     return (
       <div className={styles.detailPage}>
-        <div className={styles.emptyState}>
-          <p style={{ color: 'var(--color-text-tertiary)' }}>
-            Loading record details...
-          </p>
-        </div>
+        <JourneyLoader
+          message="Loading record details..."
+          subMessage="Fetching observations, clinical notes, and files"
+          cycle
+          size="card"
+        />
       </div>
     );
   }

@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from './layout.module.css';
 
 const NAV_ITEMS = [
@@ -40,9 +41,12 @@ export default function AuthLayout({
     return (
       <div className={styles.authLayout}>
         <main className={styles.mainContent} style={{ marginLeft: 0 }}>
-          <p style={{ color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: 'var(--space-20)' }}>
-            Loading...
-          </p>
+          <JourneyLoader
+            message="Connecting to your pregnancy journal..."
+            subMessage="Securing session with Google Drive & Sheets"
+            cycle
+            size="fullPage"
+          />
         </main>
       </div>
     );
@@ -149,26 +153,48 @@ export default function AuthLayout({
       {/* Main content */}
       <main className={styles.mainContent}>{children}</main>
 
-      {/* Mobile FAB */}
-      <Link href="/add" className={styles.fab}>
-        <Plus className={styles.fabIcon} />
-      </Link>
-
       {/* Mobile Bottom Navigation */}
       <nav className={styles.bottomNav}>
         <div className={styles.bottomNavInner}>
-          {NAV_ITEMS.slice(0, 3).map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`${styles.bottomNavLink} ${
-                isActive(item.href) ? styles.bottomNavLinkActive : ''
-              }`}
-            >
-              <item.icon className={styles.bottomNavIcon} />
-              {item.label}
-            </Link>
-          ))}
+          <Link
+            href="/dashboard"
+            className={`${styles.bottomNavLink} ${
+              isActive('/dashboard') ? styles.bottomNavLinkActive : ''
+            }`}
+          >
+            <LayoutDashboard className={styles.bottomNavIcon} />
+            Dashboard
+          </Link>
+          <Link
+            href="/timeline"
+            className={`${styles.bottomNavLink} ${
+              isActive('/timeline') ? styles.bottomNavLinkActive : ''
+            }`}
+          >
+            <Clock className={styles.bottomNavIcon} />
+            Timeline
+          </Link>
+
+          {/* Elevated Center Add Button */}
+          <Link
+            href="/add"
+            className={`${styles.bottomNavAddBtn} ${
+              isActive('/add') ? styles.bottomNavAddBtnActive : ''
+            }`}
+            title="Add Record"
+          >
+            <Plus size={22} />
+          </Link>
+
+          <Link
+            href="/charts"
+            className={`${styles.bottomNavLink} ${
+              isActive('/charts') ? styles.bottomNavLinkActive : ''
+            }`}
+          >
+            <BarChart3 className={styles.bottomNavIcon} />
+            Charts
+          </Link>
           <Link
             href="/settings"
             className={`${styles.bottomNavLink} ${

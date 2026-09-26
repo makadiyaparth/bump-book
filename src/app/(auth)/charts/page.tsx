@@ -17,6 +17,7 @@ import {
 import { Line } from 'react-chartjs-2';
 import { TrendingUp, Heart, Activity, Baby } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
 
 ChartJS.register(
@@ -286,15 +287,12 @@ export default function ChartsPage() {
   if (loading) {
     return (
       <div className={styles.chartsPage}>
-        <p
-          style={{
-            textAlign: 'center',
-            padding: 'var(--space-16) 0',
-            color: 'var(--color-text-tertiary)',
-          }}
-        >
-          Loading health insights & charts...
-        </p>
+        <JourneyLoader
+          message="Loading health insights & charts..."
+          subMessage="Plotting blood pressure, maternal weight, and baby growth"
+          cycle
+          size="fullPage"
+        />
       </div>
     );
   }

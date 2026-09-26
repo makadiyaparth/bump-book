@@ -201,38 +201,34 @@
   height: 22px;
 }
 
-/* ─── FAB (mobile add button) ─── */
-.fab {
-  display: none;
-  position: fixed;
-  bottom: calc(var(--bottom-nav-height) + var(--space-4));
-  right: var(--space-4);
-  width: 56px;
-  height: 56px;
+/* ─── Elevated Center Add Button in Bottom Nav ─── */
+.bottomNavAddBtn {
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background-color: var(--color-primary);
   color: white;
-  border: none;
-  cursor: pointer;
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-  z-index: var(--z-sticky);
-  transition: transform var(--transition-bounce), box-shadow var(--transition-base);
+  display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 4px 14px hsl(348 55% 52% / 0.35);
+  margin-top: -12px;
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+  text-decoration: none;
 }
 
-.fab:hover {
-  transform: scale(1.08);
-  box-shadow: var(--shadow-xl), 0 0 30px hsl(340 65% 55% / 0.25);
+.bottomNavAddBtn:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-2px);
+  color: white;
 }
 
-.fab:active {
-  transform: scale(0.95);
+.bottomNavAddBtn:active {
+  transform: scale(0.92);
 }
 
-.fabIcon {
-  width: 24px;
-  height: 24px;
+.bottomNavAddBtnActive {
+  background-color: var(--color-primary-dark);
 }
 
 /* ─── Mobile header ─── */
@@ -288,10 +284,6 @@
 
   .bottomNav {
     display: block;
-  }
-
-  .fab {
-    display: flex;
   }
 
   .mobileHeader {

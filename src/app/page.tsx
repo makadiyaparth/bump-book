@@ -3,6 +3,7 @@
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
 
 export default function LandingPage() {
@@ -19,8 +20,12 @@ export default function LandingPage() {
     return (
       <main className={styles.landing}>
         <div className={styles.hero}>
-          <span className={styles.heroEmoji}>🤰</span>
-          <p className={styles.heroSubtitle}>Loading...</p>
+          <JourneyLoader
+            message="Checking your session..."
+            subMessage="Connecting to your pregnancy journey journal"
+            cycle
+            size="card"
+          />
         </div>
       </main>
     );

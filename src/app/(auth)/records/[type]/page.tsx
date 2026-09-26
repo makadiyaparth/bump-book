@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { RECORD_TYPES } from '@/lib/types';
 import { formatDateShort } from '@/lib/utils';
+import JourneyLoader from '@/components/JourneyLoader';
 import styles from '../records.module.css';
 
 export default function RecordTypeListPage({
@@ -119,11 +120,12 @@ export default function RecordTypeListPage({
 
       {/* Content */}
       {loading ? (
-        <div className={styles.emptyState}>
-          <p style={{ color: 'var(--color-text-tertiary)' }}>
-            Loading {recordType.label}...
-          </p>
-        </div>
+        <JourneyLoader
+          message={`Loading ${recordType.label}...`}
+          subMessage="Fetching historical entries from your Google Sheet"
+          cycle
+          size="card"
+        />
       ) : filteredRecords.length === 0 ? (
         <div className={styles.emptyState}>
           <span className={styles.emptyEmoji}>{recordType.icon}</span>

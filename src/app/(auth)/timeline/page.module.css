@@ -274,11 +274,11 @@
 
 .weekTag {
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-medium);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: var(--color-secondary-light);
-  color: var(--color-secondary-dark);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
 
 .entryTitle {
