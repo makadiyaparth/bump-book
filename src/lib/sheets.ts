@@ -203,7 +203,7 @@ export class SheetsService {
     const response = await sheets.spreadsheets.create({
       requestBody: {
         properties: {
-          title: `Pregnancy Journey – ${userName}`,
+          title: `Bump Book – ${userName}`,
         },
         sheets: tabNames.map((title, index) => ({
           properties: {
@@ -249,7 +249,7 @@ export class SheetsService {
   }
 
   /**
-   * Check if a "Pregnancy Journey" spreadsheet already exists.
+   * Check if a "Bump Book" or "Pregnancy Journey" spreadsheet already exists.
    * Returns the spreadsheet ID if found, null otherwise.
    */
   static async findExistingSpreadsheet(
@@ -261,7 +261,7 @@ export class SheetsService {
     const drive = google.drive({ version: 'v3', auth });
 
     const response = await drive.files.list({
-      q: "name contains 'Pregnancy Journey' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+      q: "(name contains 'Bump Book' or name contains 'BumpBook' or name contains 'Pregnancy Journey') and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
       fields: 'files(id, name)',
       pageSize: 1,
     });

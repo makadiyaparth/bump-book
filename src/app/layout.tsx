@@ -25,14 +25,14 @@ const handwriting = Caveat({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://pregnancy-journey-tracker.vercel.app'),
   title: {
-    default: 'BumpBook — Pregnancy Journey Tracker',
-    template: '%s | BumpBook',
+    default: 'Bump Book — Pregnancy Journey Tracker',
+    template: '%s | Bump Book',
   },
   description:
     'A beautiful personal pregnancy journal to track your health, baby milestones, doctor visits, and more — all stored in your own Google Sheet.',
   keywords: [
+    'Bump Book',
     'BumpBook',
-    'bump book',
     'pregnancy tracker',
     'pregnancy journal',
     'baby tracker',
@@ -51,10 +51,10 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: 'BumpBook — Your Pregnancy Journey, Beautifully Recorded',
+    title: 'Bump Book — Your Pregnancy Journey, Beautifully Recorded',
     description:
       'A calm, personal journal to record every moment — from first heartbeat to delivery day. Your data stays in your own Google Sheet.',
-    images: [{ url: '/bump-book.png', width: 1254, height: 1254, alt: 'BumpBook — Pregnancy Journey Tracker' }],
+    images: [{ url: '/bump-book.png', width: 1254, height: 1254, alt: 'Bump Book — Pregnancy Journey Tracker' }],
   },
 };
 

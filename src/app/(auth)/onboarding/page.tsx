@@ -115,7 +115,7 @@ export default function OnboardingPage() {
         <div className={styles.headerLogoWrapper}>
           <Image
             src="/bump-book-icon.png"
-            alt="BumpBook"
+            alt="Bump Book"
             width={68}
             height={68}
             priority

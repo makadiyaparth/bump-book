@@ -43,7 +43,7 @@ export default function LandingPage() {
         <div className={styles.heroLogoWrapper}>
           <Image
             src="/bump-book.png"
-            alt="BumpBook — Your Pregnancy Journey, Beautifully Recorded"
+            alt="Bump Book — Your Pregnancy Journey, Beautifully Recorded"
             width={240}
             height={240}
             priority

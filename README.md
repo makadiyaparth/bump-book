@@ -1,15 +1,15 @@
-# 🤰 Pregnancy Journey Tracker
+# 📖 Bump Book
 
 > A calm, private, and beautifully designed personal pregnancy journal and health timeline.  
 > **100% of your data stays in your own Google Sheet and Google Drive.** No third-party database, no tracking, complete privacy.
 
 ---
 
-## 🌟 Why Pregnancy Journey Tracker?
+## 🌟 Why Bump Book?
 
 Expecting a child involves dozens of doctor appointments, lab reports, ultrasound scans, medications, and vitals. Most commercial pregnancy apps store sensitive medical data on private servers, monetize through ads, or fragment information across different tools.
 
-**Pregnancy Journey Tracker** takes an ownership-first approach:
+**Bump Book** takes an ownership-first approach:
 - **One Pregnancy = One Unified Timeline:** Every consultation, test, medicine, kick count, and ultrasound attached to a date.
 - **Your Google Drive is the Database:** The application uses Google Sheets as a structured relational database and Google Drive for document and scan storage.
 - **Privacy by Design:** Scoped OAuth access (`drive.file`) ensures the app can only access the files and folders it creates.
@@ -47,7 +47,7 @@ Expecting a child involves dozens of doctor appointments, lab reports, ultrasoun
 - Uploads ultrasound scans, prescriptions, and lab PDFs directly into a structured hierarchy in your Google Drive:
   ```
   My Drive/
-  └── Pregnancy Journey Files/
+  └── Bump Book Files/
       ├── Reports/
       ├── Ultrasounds/
       ├── Prescriptions/
@@ -67,11 +67,11 @@ graph TD
     B -->|OAuth 2.0 Access Token| C[Google Sheets API v4]
     B -->|OAuth 2.0 Access Token| D[Google Drive API v3]
     C -->|Stores Structured Data| E[(User's Google Sheet)]
-    D -->|Stores Scans & PDFs| F[(Pregnancy Journey Files Folder)]
+    D -->|Stores Scans & PDFs| F[(Bump Book Files Folder)]
 ```
 
 ### Google Sheets Relational Schema
-When a user signs in and completes onboarding, a spreadsheet named `Pregnancy Journey - <Name>` is created with the following tabs:
+When a user signs in and completes onboarding, a spreadsheet named `Bump Book – <Name>` is created with the following tabs:
 
 | Tab Name | Purpose | Key Columns |
 | :--- | :--- | :--- |
@@ -114,7 +114,7 @@ When a user signs in and completes onboarding, a spreadsheet named `Pregnancy Jo
 ### 2. Configure Google Cloud OAuth
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project (e.g., `Pregnancy Journey Tracker`).
+2. Create a new project (e.g., `Bump Book`).
 3. Enable the required APIs:
    - Navigate to **APIs & Services** > **Library**.
    - Search for and enable **Google Sheets API**.
@@ -170,7 +170,7 @@ When a user signs in and completes onboarding, a spreadsheet named `Pregnancy Jo
    NEXTAUTH_SECRET=your_nextauth_secret_here  # generate with: openssl rand -base64 32
 
    # Application Settings (Optional)
-   NEXT_PUBLIC_APP_NAME="Pregnancy Journey Tracker"
+   NEXT_PUBLIC_APP_NAME="Bump Book"
    ```
 
 4. **Run the development server:**

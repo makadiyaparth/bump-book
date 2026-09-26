@@ -66,13 +66,13 @@ export default function AuthLayout({
         <Link href="/dashboard" className={styles.sidebarLogo}>
           <Image
             src="/bump-book-icon.png"
-            alt="BumpBook Logo"
+            alt="Bump Book Logo"
             width={40}
             height={40}
             className={styles.sidebarLogoImg}
           />
           <div>
-            <span className={styles.logoText}>BumpBook</span>
+            <span className={styles.logoText}>Bump Book</span>
             <span className={styles.logoTextAccent}>Journey Tracker</span>
           </div>
         </Link>
@@ -144,12 +144,12 @@ export default function AuthLayout({
         <Link href="/dashboard" className={styles.mobileLogoLink}>
           <Image
             src="/bump-book-icon.png"
-            alt="BumpBook Logo"
+            alt="Bump Book Logo"
             width={32}
             height={32}
             className={styles.mobileLogoImg}
           />
-          <span className={styles.mobileLogoText}>BumpBook</span>
+          <span className={styles.mobileLogoText}>Bump Book</span>
         </Link>
         {session.user?.image && (
           <Link href="/settings">

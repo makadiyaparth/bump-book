@@ -5,9 +5,9 @@ import { ArrowLeft } from 'lucide-react';
 import styles from '@/styles/legal.module.css';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | BumpBook',
+  title: 'Privacy Policy | Bump Book',
   description:
-    'Learn how BumpBook protects your privacy. All your pregnancy health data is stored strictly in your own Google Drive and Google Sheets.',
+    'Learn how Bump Book protects your privacy. All your pregnancy health data is stored strictly in your own Google Drive and Google Sheets.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -22,12 +22,12 @@ export default function PrivacyPolicyPage() {
           <div className={styles.brandBadge}>
             <Image
               src="/bump-book-icon.png"
-              alt="BumpBook Logo"
+              alt="Bump Book Logo"
               width={26}
               height={26}
               className={styles.brandLogoImg}
             />
-            <span>BumpBook</span>
+            <span>Bump Book</span>
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export default function PrivacyPolicyPage() {
             <div className={styles.headerTop}>
               <Image
                 src="/bump-book-icon.png"
-                alt="BumpBook Logo"
+                alt="Bump Book Logo"
                 width={56}
                 height={56}
                 priority
@@ -44,7 +44,7 @@ export default function PrivacyPolicyPage() {
               />
               <div>
                 <h1 className={styles.title}>Privacy Policy</h1>
-                <p className={styles.lastUpdated}>BumpBook • Last Updated: September 2026</p>
+                <p className={styles.lastUpdated}>Bump Book • Last Updated: September 2026</p>
               </div>
             </div>
           </header>
@@ -52,12 +52,12 @@ export default function PrivacyPolicyPage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>1. Introduction & Overview</h2>
             <p className={styles.paragraph}>
-              At <strong>BumpBook</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the app&rdquo;, formerly referred to as <em>Pregnancy Journey Tracker</em>),
+              At <strong>Bump Book</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the app&rdquo;),
               your privacy and personal health data confidentiality are our top priorities. This Privacy Policy explains how
               our application interacts with your Google account, what data is accessed, and how your information is handled.
             </p>
             <p className={styles.paragraph}>
-              BumpBook operates on a strict <strong>&ldquo;Bring Your Own Data&rdquo; (BYOD)</strong> model:
+              Bump Book operates on a strict <strong>&ldquo;Bring Your Own Data&rdquo; (BYOD)</strong> model:
               we do <em>not</em> run or maintain an external database storing your medical records, health vitals, ultrasound images,
               or journal notes. Everything you log is stored directly and exclusively inside <strong>your own Google account</strong>
               (in your Google Drive and Google Sheets).
@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <strong>Google Drive (drive.file scope):</strong> Allows the application to create and manage <em>only</em> the files
-                and folders created by Pregnancy Journey Tracker (such as your dedicated pregnancy spreadsheet and any ultrasound/report
+                and folders created by Bump Book (such as your dedicated pregnancy spreadsheet and any ultrasound/report
                 files you upload). This scope does <strong>not</strong> grant access to any other files or folders in your Google Drive.
               </li>
               <li>
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
             <div className={styles.calloutBox}>
               <div className={styles.calloutBoxTitle}>Google API Limited Use Disclosure</div>
               <div className={styles.calloutBoxText}>
-                Pregnancy Journey Tracker&rsquo;s use and transfer to any other app of information received from Google APIs will adhere to the{' '}
+                Bump Book&rsquo;s use and transfer to any other app of information received from Google APIs will adhere to the{' '}
                 <a
                   href="https://developers.google.com/terms/api-services-user-data-policy"
                   target="_blank"
@@ -109,7 +109,7 @@ export default function PrivacyPolicyPage() {
             <ul className={styles.list}>
               <li>
                 <strong>Storage:</strong> All pregnancy-related health data (gestational week, blood pressure, weight, kicks,
-                doctor appointments, notes, medications) is saved directly into a spreadsheet titled <em>Pregnancy Journey Tracker Data</em> in your personal Google Drive.
+                doctor appointments, notes, medications) is saved directly into a spreadsheet titled <em>Bump Book</em> in your personal Google Drive.
               </li>
               <li>
                 <strong>No Remote Application Database:</strong> Our application servers operate statelessly. We do not store, copy, or
@@ -132,14 +132,14 @@ export default function PrivacyPolicyPage() {
             </p>
             <ul className={styles.list}>
               <li>
-                <strong>To Delete Your Data:</strong> You can delete your <em>Pregnancy Journey Tracker Data</em> spreadsheet and any uploaded scan files directly from your{' '}
+                <strong>To Delete Your Data:</strong> You can delete your <em>Bump Book</em> spreadsheet and any uploaded scan files directly from your{' '}
                 <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" className={styles.link}>
                   Google Drive
                 </a>{' '}
                 at any time.
               </li>
               <li>
-                <strong>To Revoke Application Access:</strong> You can revoke Pregnancy Journey Tracker&rsquo;s access to your Google account at any moment via your{' '}
+                <strong>To Revoke Application Access:</strong> You can revoke Bump Book&rsquo;s access to your Google account at any moment via your{' '}
                 <a
                   href="https://myaccount.google.com/permissions"
                   target="_blank"
@@ -177,7 +177,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <footer className={styles.footerNav}>
-            <span>&copy; {new Date().getFullYear()} BumpBook — Pregnancy Journey Tracker</span>
+            <span>&copy; {new Date().getFullYear()} Bump Book — Pregnancy Journey Tracker</span>
             <div className={styles.footerLinks}>
               <Link href="/terms" className={styles.link}>
                 Terms of Service

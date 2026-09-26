@@ -5,9 +5,9 @@ import { ArrowLeft } from 'lucide-react';
 import styles from '@/styles/legal.module.css';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | BumpBook',
+  title: 'Terms of Service | Bump Book',
   description:
-    'Terms of Service and Medical Disclaimer for BumpBook (Pregnancy Journey Tracker).',
+    'Terms of Service and Medical Disclaimer for Bump Book — Pregnancy Journey Tracker.',
 };
 
 export default function TermsOfServicePage() {
@@ -22,12 +22,12 @@ export default function TermsOfServicePage() {
           <div className={styles.brandBadge}>
             <Image
               src="/bump-book-icon.png"
-              alt="BumpBook Logo"
+              alt="Bump Book Logo"
               width={26}
               height={26}
               className={styles.brandLogoImg}
             />
-            <span>BumpBook</span>
+            <span>Bump Book</span>
           </div>
         </div>
 
@@ -36,7 +36,7 @@ export default function TermsOfServicePage() {
             <div className={styles.headerTop}>
               <Image
                 src="/bump-book-icon.png"
-                alt="BumpBook Logo"
+                alt="Bump Book Logo"
                 width={56}
                 height={56}
                 priority
@@ -44,7 +44,7 @@ export default function TermsOfServicePage() {
               />
               <div>
                 <h1 className={styles.title}>Terms of Service</h1>
-                <p className={styles.lastUpdated}>BumpBook • Last Updated: September 2026</p>
+                <p className={styles.lastUpdated}>Bump Book • Last Updated: September 2026</p>
               </div>
             </div>
           </header>
@@ -53,7 +53,7 @@ export default function TermsOfServicePage() {
             <div className={styles.warningBox}>
               <div className={styles.warningBoxTitle}>⚠️ Critical Medical Disclaimer</div>
               <div className={styles.warningBoxText}>
-                <strong>Pregnancy Journey Tracker is not a medical device, nor does it provide medical advice, diagnosis, or treatment.</strong>{' '}
+                <strong>Bump Book is not a medical device, nor does it provide medical advice, diagnosis, or treatment.</strong>{' '}
                 The information, calculations (such as gestational age and estimated due dates), and charts provided within this app are solely for personal organizational and journaling purposes. Always seek the advice of your obstetrician, gynecologist, midwife, or other qualified healthcare provider regarding any pregnancy questions or medical conditions. Never disregard professional medical advice or delay seeking it because of something recorded in this application.
               </div>
             </div>
@@ -62,14 +62,14 @@ export default function TermsOfServicePage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>1. Acceptance of Terms</h2>
             <p className={styles.paragraph}>
-              By accessing or using <strong>Pregnancy Journey Tracker</strong> (&ldquo;the Service&rdquo;), you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use the application.
+              By accessing or using <strong>Bump Book</strong> (&ldquo;the Service&rdquo;), you acknowledge that you have read, understood, and agreed to be bound by these Terms of Service and our Privacy Policy. If you do not agree to these terms, please do not use the application.
             </p>
           </section>
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>2. Description of Service</h2>
             <p className={styles.paragraph}>
-              Pregnancy Journey Tracker is a web application designed to help expecting parents track, organize, and visualize their pregnancy journey—including appointments, vitals (blood pressure, weight), baby growth milestones, kicks, scans, and notes. The application connects directly to your Google account to create and manage spreadsheets in your Google Drive.
+              Bump Book is a web application designed to help expecting parents track, organize, and visualize their pregnancy journey—including appointments, vitals (blood pressure, weight), baby growth milestones, kicks, scans, and notes. The application connects directly to your Google account to create and manage spreadsheets in your Google Drive.
             </p>
           </section>
 
@@ -109,7 +109,7 @@ export default function TermsOfServicePage() {
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>7. Limitation of Liability</h2>
             <p className={styles.paragraph}>
-              To the fullest extent permitted by applicable law, the creator and contributors of Pregnancy Journey Tracker shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data or medical complications arising out of or related to your use of or inability to use the Service.
+              To the fullest extent permitted by applicable law, the creator and contributors of Bump Book shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of data or medical complications arising out of or related to your use of or inability to use the Service.
             </p>
           </section>
 
@@ -121,7 +121,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <footer className={styles.footerNav}>
-            <span>&copy; {new Date().getFullYear()} BumpBook — Pregnancy Journey Tracker</span>
+            <span>&copy; {new Date().getFullYear()} Bump Book — Pregnancy Journey Tracker</span>
             <div className={styles.footerLinks}>
               <Link href="/privacy" className={styles.link}>
                 Privacy Policy

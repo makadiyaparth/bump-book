@@ -223,14 +223,14 @@ export default function DashboardPage() {
           <div className={styles.setupLogoWrapper}>
             <Image
               src="/bump-book.png"
-              alt="BumpBook"
+              alt="Bump Book"
               width={140}
               height={140}
               priority
               className={styles.setupLogoImage}
             />
           </div>
-          <h1 className={styles.setupTitle}>Welcome to BumpBook!</h1>
+          <h1 className={styles.setupTitle}>Welcome to Bump Book!</h1>
           <p className={styles.setupSubtitle}>
             Let&apos;s set up your pregnancy profile to get started. This will
             take less than a minute.

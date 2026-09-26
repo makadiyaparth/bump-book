@@ -22,7 +22,7 @@ export class DriveService {
    */
   async createFolderStructure(): Promise<string> {
     // Create root folder
-    const rootFolder = await this.createFolder('Pregnancy Journey Files');
+    const rootFolder = await this.createFolder('Bump Book Files');
 
     // Create sub-folders
     await Promise.all([
@@ -91,11 +91,11 @@ export class DriveService {
   }
 
   /**
-   * Find the root "Pregnancy Journey Files" folder.
+   * Find the root "Bump Book Files" folder.
    */
   async findRootFolder(): Promise<string | null> {
     const response = await this.drive.files.list({
-      q: "name='Pregnancy Journey Files' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+      q: "(name='Bump Book Files' or name='Pregnancy Journey Files') and mimeType='application/vnd.google-apps.folder' and trashed=false",
       fields: 'files(id)',
       pageSize: 1,
     });

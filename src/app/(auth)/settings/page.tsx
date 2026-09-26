@@ -390,28 +390,28 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Section 4: About BumpBook & Privacy */}
+        {/* Section 4: About Bump Book & Privacy */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitleRow}>
               <ShieldCheck size={18} color="var(--color-success)" />
-              <h2 className={styles.cardTitle}>About BumpBook & Privacy</h2>
+              <h2 className={styles.cardTitle}>About Bump Book & Privacy</h2>
             </div>
           </div>
 
           <div className={styles.aboutRow}>
             <Image
               src="/bump-book.png"
-              alt="BumpBook"
+              alt="Bump Book"
               width={76}
               height={76}
               className={styles.aboutLogo}
             />
             <div>
-              <h3 className={styles.aboutAppName}>BumpBook</h3>
+              <h3 className={styles.aboutAppName}>Bump Book</h3>
               <p className={styles.aboutTagline}>Your Pregnancy Journey, Beautifully Recorded</p>
               <p className={styles.infoText} style={{ marginTop: 'var(--space-2)' }}>
-                BumpBook does not run an external database. All your health records, doctor visits, and scans reside directly and securely inside your personal Google account (Google Drive & Sheets). You maintain 100% ownership and control over your data at all times.
+                Bump Book does not run an external database. All your pregnancy health records, doctor visits, and scans reside directly and securely inside your personal Google account (Google Drive & Sheets). You maintain 100% ownership and control over your data at all times.
               </p>
             </div>
           </div>
