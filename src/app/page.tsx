@@ -2,6 +2,7 @@
 
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useEffect } from 'react';
 import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
@@ -108,8 +109,16 @@ export default function LandingPage() {
       </div>
 
       <footer className={styles.footer}>
-        Your data stays in your own Google Sheet — always accessible, always
-        yours.
+        <p>Your data stays in your own Google Sheet — always accessible, always yours.</p>
+        <div className={styles.footerLinks}>
+          <Link href="/privacy" className={styles.footerLink}>
+            Privacy Policy
+          </Link>
+          <span>•</span>
+          <Link href="/terms" className={styles.footerLink}>
+            Terms of Service
+          </Link>
+        </div>
       </footer>
     </main>
   );
