@@ -52,7 +52,33 @@
   color: var(--color-primary);
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
+}
+
+.brandLogoImg {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
+  box-shadow: 0 1px 3px hsl(348 65% 55% / 0.15);
+}
+
+.headerTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.pageHeaderLogo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+  box-shadow:
+    0 4px 14px hsl(348 65% 55% / 0.15),
+    0 0 0 1px hsl(348 60% 90% / 0.6);
+  flex-shrink: 0;
+  background: white;
 }
 
 .card {

@@ -3,6 +3,7 @@
 import { useSession, signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect } from 'react';
 import JourneyLoader from '@/components/JourneyLoader';
 import styles from './page.module.css';
@@ -39,13 +40,22 @@ export default function LandingPage() {
   return (
     <main className={styles.landing}>
       <div className={styles.hero}>
-        <span className={styles.heroEmoji}>🤰</span>
+        <div className={styles.heroLogoWrapper}>
+          <Image
+            src="/bump-book.png"
+            alt="BumpBook — Your Pregnancy Journey, Beautifully Recorded"
+            width={240}
+            height={240}
+            priority
+            className={styles.heroLogoImage}
+          />
+        </div>
         <p className={styles.heroHandwritten}>a cozy, personal keepsake 🌸</p>
         <h1 className={styles.heroTitle}>
           Your{' '}
           <span className={styles.heroTitleAccent}>Pregnancy Journey</span>
           <br />
-          Beautifully Tracked
+          Beautifully Recorded
         </h1>
         <p className={styles.heroSubtitle}>
           A calm, personal journal to record every moment — from first heartbeat

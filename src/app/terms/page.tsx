@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import styles from '@/styles/legal.module.css';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Pregnancy Journey Tracker',
+  title: 'Terms of Service | BumpBook',
   description:
-    'Terms of Service and Medical Disclaimer for Pregnancy Journey Tracker.',
+    'Terms of Service and Medical Disclaimer for BumpBook (Pregnancy Journey Tracker).',
 };
 
 export default function TermsOfServicePage() {
@@ -18,13 +19,34 @@ export default function TermsOfServicePage() {
             <ArrowLeft size={16} />
             Back to Home
           </Link>
-          <span className={styles.brandBadge}>🤰 Pregnancy Journey Tracker</span>
+          <div className={styles.brandBadge}>
+            <Image
+              src="/bump-book-icon.png"
+              alt="BumpBook Logo"
+              width={26}
+              height={26}
+              className={styles.brandLogoImg}
+            />
+            <span>BumpBook</span>
+          </div>
         </div>
 
         <main className={styles.card}>
           <header className={styles.header}>
-            <h1 className={styles.title}>Terms of Service</h1>
-            <p className={styles.lastUpdated}>Last Updated: September 2026</p>
+            <div className={styles.headerTop}>
+              <Image
+                src="/bump-book-icon.png"
+                alt="BumpBook Logo"
+                width={56}
+                height={56}
+                priority
+                className={styles.pageHeaderLogo}
+              />
+              <div>
+                <h1 className={styles.title}>Terms of Service</h1>
+                <p className={styles.lastUpdated}>BumpBook • Last Updated: September 2026</p>
+              </div>
+            </div>
           </header>
 
           <section className={styles.section}>
@@ -99,7 +121,7 @@ export default function TermsOfServicePage() {
           </section>
 
           <footer className={styles.footerNav}>
-            <span>&copy; {new Date().getFullYear()} Pregnancy Journey Tracker</span>
+            <span>&copy; {new Date().getFullYear()} BumpBook — Pregnancy Journey Tracker</span>
             <div className={styles.footerLinks}>
               <Link href="/privacy" className={styles.link}>
                 Privacy Policy

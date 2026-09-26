@@ -1,12 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ArrowLeft } from 'lucide-react';
 import styles from '@/styles/legal.module.css';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Pregnancy Journey Tracker',
+  title: 'Privacy Policy | BumpBook',
   description:
-    'Learn how Pregnancy Journey Tracker protects your privacy. All your pregnancy health data is stored strictly in your own Google Drive and Google Sheets.',
+    'Learn how BumpBook protects your privacy. All your pregnancy health data is stored strictly in your own Google Drive and Google Sheets.',
 };
 
 export default function PrivacyPolicyPage() {
@@ -18,24 +19,45 @@ export default function PrivacyPolicyPage() {
             <ArrowLeft size={16} />
             Back to Home
           </Link>
-          <span className={styles.brandBadge}>🤰 Pregnancy Journey Tracker</span>
+          <div className={styles.brandBadge}>
+            <Image
+              src="/bump-book-icon.png"
+              alt="BumpBook Logo"
+              width={26}
+              height={26}
+              className={styles.brandLogoImg}
+            />
+            <span>BumpBook</span>
+          </div>
         </div>
 
         <main className={styles.card}>
           <header className={styles.header}>
-            <h1 className={styles.title}>Privacy Policy</h1>
-            <p className={styles.lastUpdated}>Last Updated: September 2026</p>
+            <div className={styles.headerTop}>
+              <Image
+                src="/bump-book-icon.png"
+                alt="BumpBook Logo"
+                width={56}
+                height={56}
+                priority
+                className={styles.pageHeaderLogo}
+              />
+              <div>
+                <h1 className={styles.title}>Privacy Policy</h1>
+                <p className={styles.lastUpdated}>BumpBook • Last Updated: September 2026</p>
+              </div>
+            </div>
           </header>
 
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>1. Introduction & Overview</h2>
             <p className={styles.paragraph}>
-              At <strong>Pregnancy Journey Tracker</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the app&rdquo;),
+              At <strong>BumpBook</strong> (&ldquo;we&rdquo;, &ldquo;our&rdquo;, or &ldquo;the app&rdquo;, formerly referred to as <em>Pregnancy Journey Tracker</em>),
               your privacy and personal health data confidentiality are our top priorities. This Privacy Policy explains how
               our application interacts with your Google account, what data is accessed, and how your information is handled.
             </p>
             <p className={styles.paragraph}>
-              Pregnancy Journey Tracker operates on a strict <strong>&ldquo;Bring Your Own Data&rdquo; (BYOD)</strong> model:
+              BumpBook operates on a strict <strong>&ldquo;Bring Your Own Data&rdquo; (BYOD)</strong> model:
               we do <em>not</em> run or maintain an external database storing your medical records, health vitals, ultrasound images,
               or journal notes. Everything you log is stored directly and exclusively inside <strong>your own Google account</strong>
               (in your Google Drive and Google Sheets).
@@ -155,7 +177,7 @@ export default function PrivacyPolicyPage() {
           </section>
 
           <footer className={styles.footerNav}>
-            <span>&copy; {new Date().getFullYear()} Pregnancy Journey Tracker</span>
+            <span>&copy; {new Date().getFullYear()} BumpBook — Pregnancy Journey Tracker</span>
             <div className={styles.footerLinks}>
               <Link href="/terms" className={styles.link}>
                 Terms of Service

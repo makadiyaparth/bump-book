@@ -10,6 +10,25 @@
   margin-bottom: var(--space-10);
 }
 
+.headerLogoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+
+.headerLogoImg {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  object-fit: cover;
+  box-shadow:
+    0 8px 24px -4px hsl(348 65% 55% / 0.2),
+    0 0 0 1px hsl(348 60% 90% / 0.6);
+  background: white;
+  animation: floatGentle 4s ease-in-out infinite;
+}
+
 .headerEmoji {
   font-size: 3.5rem;
   margin-bottom: var(--space-2);

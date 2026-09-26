@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
@@ -111,7 +112,16 @@ export default function OnboardingPage() {
   return (
     <div className={styles.onboarding}>
       <div className={styles.header}>
-        <span className={styles.headerEmoji}>🌟</span>
+        <div className={styles.headerLogoWrapper}>
+          <Image
+            src="/bump-book-icon.png"
+            alt="BumpBook"
+            width={68}
+            height={68}
+            priority
+            className={styles.headerLogoImg}
+          />
+        </div>
         <p className={styles.onboardingDiaryTag}>your beautiful new chapter begins ✨</p>
         <h1 className={styles.headerTitle}>Set Up Your Journey</h1>
         <p className={styles.headerSubtitle}>

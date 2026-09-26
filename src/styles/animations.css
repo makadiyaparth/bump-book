@@ -183,3 +183,12 @@
     box-shadow: 0 0 24px 8px hsl(348 55% 52% / 0.25);
   }
 }
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}

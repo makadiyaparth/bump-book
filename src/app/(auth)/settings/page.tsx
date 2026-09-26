@@ -2,6 +2,8 @@
 
 import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 import {
   User,
   FolderSync,
@@ -162,18 +164,13 @@ export default function SettingsPage() {
                 referrerPolicy="no-referrer"
               />
             ) : (
-              <div
+              <Image
+                src="/bump-book-icon.png"
+                alt="User"
+                width={52}
+                height={52}
                 className={styles.avatar}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1.5rem',
-                  backgroundColor: 'var(--color-bg-alt)',
-                }}
-              >
-                🤰
-              </div>
+              />
             )}
 
             <div className={styles.accountInfo}>
@@ -393,21 +390,37 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* Section 4: Privacy & App Information */}
+        {/* Section 4: About BumpBook & Privacy */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
             <div className={styles.cardTitleRow}>
               <ShieldCheck size={18} color="var(--color-success)" />
-              <h2 className={styles.cardTitle}>Privacy & Data Ownership</h2>
+              <h2 className={styles.cardTitle}>About BumpBook & Privacy</h2>
             </div>
           </div>
 
-          <p className={styles.infoText}>
-            Pregnancy Journey Tracker does not run a central database. All health
-            records and uploaded documents reside completely inside your personal
-            Google account (Google Sheets & Google Drive). You maintain 100%
-            ownership and control over your medical data at all times.
-          </p>
+          <div className={styles.aboutRow}>
+            <Image
+              src="/bump-book.png"
+              alt="BumpBook"
+              width={76}
+              height={76}
+              className={styles.aboutLogo}
+            />
+            <div>
+              <h3 className={styles.aboutAppName}>BumpBook</h3>
+              <p className={styles.aboutTagline}>Your Pregnancy Journey, Beautifully Recorded</p>
+              <p className={styles.infoText} style={{ marginTop: 'var(--space-2)' }}>
+                BumpBook does not run an external database. All your health records, doctor visits, and scans reside directly and securely inside your personal Google account (Google Drive & Sheets). You maintain 100% ownership and control over your data at all times.
+              </p>
+            </div>
+          </div>
+
+          <div className={styles.aboutLegalLinks}>
+            <Link href="/privacy" className={styles.legalLink}>Privacy Policy</Link>
+            <span>•</span>
+            <Link href="/terms" className={styles.legalLink}>Terms of Service</Link>
+          </div>
         </div>
       </div>
 

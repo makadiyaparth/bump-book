@@ -34,6 +34,36 @@
   animation: fadeInUp var(--transition-slow) forwards;
 }
 
+.heroLogoWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  position: relative;
+}
+
+.heroLogoImage {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  border-radius: 28px;
+  box-shadow:
+    0 16px 36px -10px hsl(348 65% 55% / 0.18),
+    0 0 0 1px hsl(348 60% 90% / 0.5),
+    0 2px 8px hsl(30 40% 90% / 0.5);
+  background: hsl(0 0% 100% / 0.95);
+  padding: var(--space-2);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+.heroLogoImage:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 22px 45px -8px hsl(348 65% 55% / 0.25),
+    0 0 0 1px hsl(348 60% 85% / 0.7);
+}
+
 .heroEmoji {
   font-size: 4rem;
   margin-bottom: var(--space-4);
@@ -180,6 +210,12 @@
 
 /* ─── Mobile ─── */
 @media (max-width: 640px) {
+  .heroLogoImage {
+    width: 160px;
+    height: 160px;
+    border-radius: 22px;
+  }
+
   .heroTitle {
     font-size: var(--font-size-3xl);
   }

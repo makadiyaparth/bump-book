@@ -253,6 +253,59 @@
 }
 
 /* ─── App Info ─── */
+.aboutRow {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.aboutLogo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  object-fit: contain;
+  box-shadow: 0 4px 14px hsl(348 65% 55% / 0.15), 0 0 0 1px hsl(348 60% 90% / 0.6);
+  background: white;
+  flex-shrink: 0;
+}
+
+.aboutAppName {
+  font-family: var(--font-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+.aboutTagline {
+  font-family: var(--font-handwriting);
+  font-size: var(--font-size-base);
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.aboutLegalLinks {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-light);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.legalLink {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+.legalLink:hover {
+  color: var(--color-primary-dark);
+}
+
 .infoText {
   font-size: var(--font-size-xs);
   color: var(--color-text-tertiary);

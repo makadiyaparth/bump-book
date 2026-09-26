@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -63,10 +64,16 @@ export default function AuthLayout({
       {/* Desktop Sidebar */}
       <aside className={styles.sidebar}>
         <Link href="/dashboard" className={styles.sidebarLogo}>
-          <span className={styles.logoEmoji}>🤰</span>
+          <Image
+            src="/bump-book-icon.png"
+            alt="BumpBook Logo"
+            width={40}
+            height={40}
+            className={styles.sidebarLogoImg}
+          />
           <div>
-            <span className={styles.logoText}>Pregnancy Journey</span>
-            <span className={styles.logoTextAccent}>Tracker</span>
+            <span className={styles.logoText}>BumpBook</span>
+            <span className={styles.logoTextAccent}>Journey Tracker</span>
           </div>
         </Link>
 
@@ -135,8 +142,14 @@ export default function AuthLayout({
       {/* Mobile Header */}
       <header className={styles.mobileHeader}>
         <Link href="/dashboard" className={styles.mobileLogoLink}>
-          <span className={styles.logoEmoji}>🤰</span>
-          <span className={styles.mobileLogoText}>Journey</span>
+          <Image
+            src="/bump-book-icon.png"
+            alt="BumpBook Logo"
+            width={32}
+            height={32}
+            className={styles.mobileLogoImg}
+          />
+          <span className={styles.mobileLogoText}>BumpBook</span>
         </Link>
         {session.user?.image && (
           <Link href="/settings">

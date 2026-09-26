@@ -29,6 +29,21 @@
   text-decoration: none;
 }
 
+.sidebarLogoImg {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px hsl(348 65% 55% / 0.18), 0 0 0 1px hsl(348 60% 90% / 0.5);
+  background: white;
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+}
+
+.sidebarLogo:hover .sidebarLogoImg {
+  transform: scale(1.05) rotate(-2deg);
+}
+
 .logoEmoji {
   font-size: 1.85rem;
   animation: bounce 3s ease-in-out infinite;
@@ -258,6 +273,16 @@
   align-items: center;
   gap: var(--space-2);
   text-decoration: none;
+}
+
+.mobileLogoImg {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px hsl(348 65% 55% / 0.18), 0 0 0 1px hsl(348 60% 90% / 0.5);
+  background: white;
+  flex-shrink: 0;
 }
 
 .mobileLogoText {

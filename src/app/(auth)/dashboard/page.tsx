@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { getPregnancyInfo, formatPregnancyWeek, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
@@ -219,8 +220,17 @@ export default function DashboardPage() {
     return (
       <div className={styles.dashboard}>
         <div className={styles.setupPrompt}>
-          <span className={styles.setupEmoji}>🤰</span>
-          <h1 className={styles.setupTitle}>Welcome to Your Journey!</h1>
+          <div className={styles.setupLogoWrapper}>
+            <Image
+              src="/bump-book.png"
+              alt="BumpBook"
+              width={140}
+              height={140}
+              priority
+              className={styles.setupLogoImage}
+            />
+          </div>
+          <h1 className={styles.setupTitle}>Welcome to BumpBook!</h1>
           <p className={styles.setupSubtitle}>
             Let&apos;s set up your pregnancy profile to get started. This will
             take less than a minute.
