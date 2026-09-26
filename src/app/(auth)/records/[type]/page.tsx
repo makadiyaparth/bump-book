@@ -7,9 +7,7 @@ import {
   ArrowLeft,
   Plus,
   Search,
-  ExternalLink,
   ChevronRight,
-  Calendar,
 } from 'lucide-react';
 import { RECORD_TYPES } from '@/lib/types';
 import { formatDateShort } from '@/lib/utils';

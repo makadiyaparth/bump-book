@@ -4,7 +4,6 @@ import { useSession, signOut } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import {
   User,
-  FileSpreadsheet,
   FolderSync,
   LogOut,
   ExternalLink,
@@ -13,7 +12,6 @@ import {
   Heart,
 } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
-import { formatDate } from '@/lib/utils';
 import styles from './page.module.css';
 import formStyles from '@/styles/forms.module.css';
 

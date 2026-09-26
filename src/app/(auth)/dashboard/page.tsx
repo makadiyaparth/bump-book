@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { getPregnancyInfo, formatPregnancyWeek, getTrimesterLabel } from '@/lib/pregnancy';
 import { formatDate, formatDateShort, formatRelativeDate, getGreeting } from '@/lib/utils';
@@ -15,7 +15,6 @@ import type {
   Medicine,
   TimelineEntry,
 } from '@/lib/types';
-import { RECORD_TYPES } from '@/lib/types';
 import styles from './page.module.css';
 
 export default function DashboardPage() {
@@ -29,11 +28,12 @@ export default function DashboardPage() {
   const [recentTimeline, setRecentTimeline] = useState<TimelineEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchData = useCallback(async () => {
-    if (!session?.accessToken || !session?.spreadsheetId) {
-      setLoading(false);
-      return;
-    }
+  useEffect(() => {
+    async function fetchData() {
+      if (!session?.accessToken || !session?.spreadsheetId) {
+        setLoading(false);
+        return;
+      }
 
     try {
       // Fetch pregnancy profile
@@ -205,11 +205,10 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [session?.accessToken, session?.spreadsheetId]);
+  }
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  fetchData();
+}, [session?.accessToken, session?.spreadsheetId]);
 
   const greeting = getGreeting();
   const firstName = session?.user?.name?.split(' ')[0] || '';

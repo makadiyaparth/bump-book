@@ -1,6 +1,5 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
@@ -11,7 +10,6 @@ import styles from './page.module.css';
 const TOTAL_STEPS = 3;
 
 export default function OnboardingPage() {
-  const { data: session } = useSession();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);

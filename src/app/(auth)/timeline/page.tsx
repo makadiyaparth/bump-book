@@ -8,8 +8,6 @@ import {
   Plus,
   ChevronRight,
   ExternalLink,
-  Calendar,
-  Sparkles,
 } from 'lucide-react';
 import { formatDateShort, groupBy } from '@/lib/utils';
 import { RECORD_TYPES } from '@/lib/types';
@@ -35,7 +33,6 @@ export default function TimelinePage() {
   const [loading, setLoading] = useState(true);
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [lmpDate, setLmpDate] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadTimelineData() {

@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,7 +15,7 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { Plus, TrendingUp, Heart, Activity, Baby } from 'lucide-react';
+import { TrendingUp, Heart, Activity, Baby } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils';
 import styles from './page.module.css';
 
@@ -125,26 +125,29 @@ export default function ChartsPage() {
   }, [session]);
 
   // Filter records by trimester
-  const filterByTrimester = (recordsDate: string) => {
-    if (timeRange === 'all' || !lmpDate) return true;
-    const diffWeeks =
-      (new Date(recordsDate).getTime() - new Date(lmpDate).getTime()) /
-      (7 * 24 * 60 * 60 * 1000);
+  const filterByTrimester = useCallback(
+    (recordsDate: string) => {
+      if (timeRange === 'all' || !lmpDate) return true;
+      const diffWeeks =
+        (new Date(recordsDate).getTime() - new Date(lmpDate).getTime()) /
+        (7 * 24 * 60 * 60 * 1000);
 
-    if (timeRange === 't1') return diffWeeks <= 13;
-    if (timeRange === 't2') return diffWeeks > 13 && diffWeeks <= 27;
-    if (timeRange === 't3') return diffWeeks > 27;
-    return true;
-  };
+      if (timeRange === 't1') return diffWeeks <= 13;
+      if (timeRange === 't2') return diffWeeks > 13 && diffWeeks <= 27;
+      if (timeRange === 't3') return diffWeeks > 27;
+      return true;
+    },
+    [timeRange, lmpDate]
+  );
 
   const filteredHealth = useMemo(
     () => healthData.filter((r) => filterByTrimester(r.date)),
-    [healthData, timeRange, lmpDate]
+    [healthData, filterByTrimester]
   );
 
   const filteredBaby = useMemo(
     () => babyData.filter((r) => filterByTrimester(r.date)),
-    [babyData, timeRange, lmpDate]
+    [babyData, filterByTrimester]
   );
 
   // Latest stats calculations
@@ -279,6 +282,22 @@ export default function ChartsPage() {
       },
     },
   };
+
+  if (loading) {
+    return (
+      <div className={styles.chartsPage}>
+        <p
+          style={{
+            textAlign: 'center',
+            padding: 'var(--space-16) 0',
+            color: 'var(--color-text-tertiary)',
+          }}
+        >
+          Loading health insights & charts...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.chartsPage}>
