@@ -316,9 +316,10 @@ export default function TimelinePage() {
       <div className={styles.header}>
         <div className={styles.titleRow}>
           <div>
+            <p className={styles.timelineDiaryTag}>every little memory counts 📖</p>
             <h1 className={styles.title}>Journey Timeline</h1>
             <p className={styles.subtitle}>
-              {items.length} moments recorded in your journey
+              <span className={styles.countNumber}>{items.length}</span> precious moments recorded along the way
             </p>
           </div>
           <div className={styles.headerActions}>

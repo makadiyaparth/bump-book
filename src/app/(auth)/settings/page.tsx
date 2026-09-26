@@ -136,6 +136,7 @@ export default function SettingsPage() {
     <div className={styles.settingsPage}>
       {/* Header */}
       <div className={styles.header}>
+        <p className={styles.settingsDiaryTag}>preferences & privacy ⚙️</p>
         <h1 className={styles.title}>Settings</h1>
         <p className={styles.subtitle}>
           Manage your pregnancy details, cloud integrations, and account

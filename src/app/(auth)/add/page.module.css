@@ -10,10 +10,21 @@
   margin-bottom: var(--space-8);
 }
 
+.chooserDiaryTag {
+  font-family: var(--font-handwriting);
+  font-size: 1.35rem;
+  color: var(--color-primary);
+  transform: rotate(-1.5deg);
+  display: inline-block;
+  margin-bottom: var(--space-1);
+}
+
 .chooserTitle {
-  font-size: var(--font-size-2xl);
+  font-family: var(--font-display);
+  font-size: 2.25rem;
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-2);
+  letter-spacing: -0.015em;
 }
 
 .chooserSubtitle {

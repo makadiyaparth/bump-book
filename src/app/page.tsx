@@ -39,6 +39,7 @@ export default function LandingPage() {
     <main className={styles.landing}>
       <div className={styles.hero}>
         <span className={styles.heroEmoji}>🤰</span>
+        <p className={styles.heroHandwritten}>a cozy, personal keepsake 🌸</p>
         <h1 className={styles.heroTitle}>
           Your{' '}
           <span className={styles.heroTitleAccent}>Pregnancy Journey</span>

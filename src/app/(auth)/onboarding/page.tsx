@@ -112,6 +112,7 @@ export default function OnboardingPage() {
     <div className={styles.onboarding}>
       <div className={styles.header}>
         <span className={styles.headerEmoji}>🌟</span>
+        <p className={styles.onboardingDiaryTag}>your beautiful new chapter begins ✨</p>
         <h1 className={styles.headerTitle}>Set Up Your Journey</h1>
         <p className={styles.headerSubtitle}>
           Just a few details to get your pregnancy tracker ready.

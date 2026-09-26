@@ -34,10 +34,18 @@ body {
 }
 
 /* ─── Typography ─── */
-h1, h2, h3, h4, h5, h6 {
+h1, h2, h3 {
+  font-family: var(--font-display);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-tight);
-  letter-spacing: var(--letter-spacing-tight);
+  letter-spacing: -0.015em;
+  color: var(--color-text);
+}
+
+h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
   color: var(--color-text);
 }
 
@@ -45,6 +53,14 @@ h1 { font-size: var(--font-size-3xl); }
 h2 { font-size: var(--font-size-2xl); }
 h3 { font-size: var(--font-size-xl); }
 h4 { font-size: var(--font-size-lg); }
+
+.font-handwriting {
+  font-family: var(--font-handwriting);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
 
 p {
   line-height: var(--line-height-relaxed);

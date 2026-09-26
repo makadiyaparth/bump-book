@@ -1,12 +1,25 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Fraunces, Caveat } from 'next/font/google';
 import AuthProvider from '@/components/AuthProvider';
 import './globals.css';
 
-const inter = Inter({
+const sans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-inter',
+  variable: '--font-sans',
+});
+
+const display = Fraunces({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-display',
+});
+
+const handwriting = Caveat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-handwriting',
+  weight: ['500', '600', '700'],
 });
 
 export const metadata: Metadata = {
@@ -24,10 +37,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${handwriting.variable}`}>
       <body>
-          <AuthProvider>{children}</AuthProvider>
-        </body>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

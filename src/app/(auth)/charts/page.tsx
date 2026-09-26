@@ -261,13 +261,13 @@ export default function ChartsPage() {
         position: 'top' as const,
         labels: {
           boxWidth: 12,
-          font: { family: 'Inter', size: 12 },
+          font: { family: 'var(--font-sans), sans-serif', size: 12 },
         },
       },
       tooltip: {
         backgroundColor: 'hsl(240, 10%, 15%)',
-        titleFont: { family: 'Inter', size: 12 },
-        bodyFont: { family: 'Inter', size: 13, weight: 'bold' as const },
+        titleFont: { family: 'var(--font-sans), sans-serif', size: 12 },
+        bodyFont: { family: 'var(--font-sans), sans-serif', size: 13, weight: 'bold' as const },
         padding: 10,
         cornerRadius: 8,
       },
@@ -275,11 +275,11 @@ export default function ChartsPage() {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { family: 'Inter', size: 11 } },
+        ticks: { font: { family: 'var(--font-sans), sans-serif', size: 11 } },
       },
       y: {
         grid: { color: 'hsl(240, 10%, 94%)' },
-        ticks: { font: { family: 'Inter', size: 11 } },
+        ticks: { font: { family: 'var(--font-sans), sans-serif', size: 11 } },
       },
     },
   };
@@ -303,6 +303,7 @@ export default function ChartsPage() {
       <div className={styles.header}>
         <div className={styles.titleRow}>
           <div>
+            <p className={styles.chartsDiaryTag}>watching you grow day by day 🌱</p>
             <h1 className={styles.title}>Health & Growth Insights</h1>
             <p className={styles.subtitle}>
               Monitor maternal health trends and baby development milestones

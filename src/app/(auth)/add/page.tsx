@@ -8,9 +8,10 @@ export default function AddRecordPage() {
   return (
     <div className={styles.chooser}>
       <div className={styles.chooserHeader}>
+        <p className={styles.chooserDiaryTag}>pen down a new memory ✍️</p>
         <h1 className={styles.chooserTitle}>Add Record</h1>
         <p className={styles.chooserSubtitle}>
-          What would you like to record?
+          What would you like to record today?
         </p>
       </div>
 

@@ -58,9 +58,11 @@
 }
 
 .title {
+  font-family: var(--font-display);
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
+  letter-spacing: -0.01em;
 }
 
 .countSubtitle {

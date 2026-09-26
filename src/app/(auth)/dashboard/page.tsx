@@ -250,33 +250,35 @@ export default function DashboardPage() {
     <div className={styles.dashboard}>
       {/* ─── Greeting ─── */}
       <div className={styles.greeting}>
+        <p className={styles.greetingDiaryTag}>our personal motherhood diary ✨</p>
         <h1 className={styles.greetingText}>
-          {greeting}, {firstName} <span className={styles.greetingEmoji}>👋</span>
+          {greeting}, <span className={styles.greetingName}>{firstName}</span>{' '}
+          <span className={styles.greetingEmoji}>👋</span>
         </h1>
         {pregnancyInfo && (
-          <>
-            <p className={styles.greetingWeek}>
-              <span className={styles.greetingWeekBold}>
-                {formatPregnancyWeek(pregnancyInfo.currentWeek, pregnancyInfo.currentDay)}
-              </span>
-            </p>
-            <p className={styles.greetingDue}>
-              Due {formatDate(pregnancy!.dueDate)} • {pregnancyInfo.daysRemaining} days remaining
-            </p>
-          </>
+          <div className={styles.greetingMetaRow}>
+            <span className={styles.greetingDuePill}>
+              Due {formatDate(pregnancy!.dueDate)}
+            </span>
+            <span className={styles.handwrittenCountdown}>
+              ~{pregnancyInfo.daysRemaining} sweet days until we meet you! 💕
+            </span>
+          </div>
         )}
       </div>
 
-      {/* ─── Progress Card (Minimal, High Contrast, Baby Milestone) ─── */}
+      {/* ─── Progress Card (Minimal, High Contrast, Playful Scale) ─── */}
       {pregnancyInfo && (() => {
         const milestone = getBabyMilestone(pregnancyInfo.currentWeek);
         return (
           <div className={styles.progressCard}>
             <div className={styles.progressHeader}>
-              <div className={styles.progressWeekGroup}>
-                <span className={styles.progressOverline}>Current Stage</span>
-                <div className={styles.progressWeekRow}>
-                  <p className={styles.progressWeek}>Week {pregnancyInfo.currentWeek}</p>
+              <div className={styles.progressWeekHero}>
+                <span className={styles.weekNumberGiant}>
+                  {pregnancyInfo.currentWeek}
+                </span>
+                <div className={styles.weekLabelStack}>
+                  <span className={styles.weekUnit}>WEEKS</span>
                   <span className={styles.progressDayBadge}>
                     +{pregnancyInfo.currentDay} day{pregnancyInfo.currentDay !== 1 ? 's' : ''}
                   </span>
@@ -288,7 +290,7 @@ export default function DashboardPage() {
                   {getTrimesterLabel(pregnancyInfo.trimester)}
                 </span>
                 <span className={styles.progressCountdown}>
-                  {pregnancyInfo.daysRemaining} days to go
+                  {pregnancyInfo.daysRemaining} days to go 🎈
                 </span>
               </div>
             </div>
@@ -313,10 +315,15 @@ export default function DashboardPage() {
             <div className={styles.milestoneBox}>
               <div className={styles.milestoneIcon}>{milestone.fruitEmoji}</div>
               <div className={styles.milestoneContent}>
-                <p className={styles.milestoneHeading}>
-                  Baby is the size of a <span className={styles.milestoneFruit}>{milestone.fruit}</span>
-                  <span className={styles.milestoneStats}> • {milestone.lengthCm} • {milestone.weightGrams}</span>
-                </p>
+                <div className={styles.milestoneHeadingRow}>
+                  <p className={styles.milestoneHeading}>
+                    Baby is the size of a <span className={styles.milestoneFruit}>{milestone.fruit}</span>
+                  </p>
+                  <div className={styles.milestoneTagsRow}>
+                    <span className={styles.milestoneTag}>📏 {milestone.lengthCm}</span>
+                    <span className={styles.milestoneTag}>⚖️ {milestone.weightGrams}</span>
+                  </div>
+                </div>
                 <p className={styles.milestoneDetail}>{milestone.detail}</p>
               </div>
             </div>

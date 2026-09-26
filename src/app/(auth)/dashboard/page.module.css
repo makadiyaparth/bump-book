@@ -6,36 +6,73 @@
 /* ─── Greeting ─── */
 .greeting {
   margin-bottom: var(--space-8);
+  position: relative;
+}
+
+.greetingDiaryTag {
+  font-family: var(--font-handwriting);
+  font-size: 1.35rem;
+  color: var(--color-primary);
+  transform: rotate(-2deg);
+  display: inline-block;
+  margin-bottom: var(--space-1);
+  letter-spacing: 0.02em;
 }
 
 .greetingText {
-  font-size: var(--font-size-2xl);
+  font-family: var(--font-display);
+  font-size: 2.35rem;
   font-weight: var(--font-weight-bold);
   color: var(--color-text);
-  margin-bottom: var(--space-1);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: var(--space-2);
+}
+
+.greetingName {
+  font-style: italic;
+  color: var(--color-primary);
 }
 
 .greetingEmoji {
   margin-left: var(--space-2);
+  display: inline-block;
+  animation: bounce 2.4s ease-in-out infinite;
 }
 
-.greetingWeek {
-  font-size: var(--font-size-lg);
+.greetingMetaRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.greetingDuePill {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
   color: var(--color-text-secondary);
+  background-color: var(--color-surface);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
 }
 
-.greetingWeekBold {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-primary);
+.handwrittenCountdown {
+  font-family: var(--font-handwriting);
+  font-size: 1.25rem;
+  font-weight: var(--font-weight-bold);
+  color: hsl(32 75% 36%);
+  background-color: hsl(32 75% 92%);
+  padding: 2px 14px;
+  border-radius: var(--radius-full);
+  transform: rotate(1deg);
+  display: inline-flex;
+  align-items: center;
+  box-shadow: 0 1px 4px hsl(32 75% 56% / 0.15);
 }
 
-.greetingDue {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-tertiary);
-  margin-top: var(--space-1);
-}
-
-/* ─── Progress card (Minimal, High-Contrast) ─── */
+/* ─── Progress card (Minimal, High-Contrast, Playful Scale) ─── */
 .progressCard {
   background-color: var(--color-surface);
   border-radius: var(--radius-2xl);
@@ -61,32 +98,33 @@
   flex-wrap: wrap;
 }
 
-.progressWeekGroup {
+.progressWeekHero {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.weekNumberGiant {
+  font-family: var(--font-display);
+  font-size: 3.75rem;
+  font-weight: 700;
+  line-height: 0.85;
+  color: var(--color-text);
+  letter-spacing: -0.03em;
+}
+
+.weekLabelStack {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
-.progressOverline {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: var(--letter-spacing-wide);
-  color: var(--color-primary);
-}
-
-.progressWeekRow {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-}
-
-.progressWeek {
-  font-size: 2.25rem;
+.weekUnit {
+  font-size: 0.75rem;
   font-weight: var(--font-weight-bold);
-  color: var(--color-text);
-  line-height: 1;
-  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--color-primary);
 }
 
 .progressDayBadge {
@@ -94,8 +132,9 @@
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary-dark);
   background-color: var(--color-primary-light);
-  padding: 3px 10px;
+  padding: 2px 10px;
   border-radius: var(--radius-full);
+  width: fit-content;
 }
 
 .progressBadges {
@@ -162,23 +201,34 @@
   display: flex;
   align-items: center;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-4) var(--space-5);
   background-color: var(--color-bg);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
+  transition: all var(--transition-base);
+}
+
+.milestoneBox:hover {
+  background-color: var(--color-surface-hover);
+  border-color: var(--color-primary-light);
 }
 
 .milestoneIcon {
-  font-size: 2rem;
-  width: 48px;
-  height: 48px;
+  font-size: 2.25rem;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: var(--color-surface);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sm);
   flex-shrink: 0;
+  transition: transform var(--transition-bounce);
+}
+
+.milestoneBox:hover .milestoneIcon {
+  transform: scale(1.15) rotate(6deg);
 }
 
 .milestoneContent {
@@ -186,21 +236,42 @@
   min-width: 0;
 }
 
+.milestoneHeadingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
 .milestoneHeading {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text);
-  margin-bottom: 2px;
 }
 
 .milestoneFruit {
+  font-style: italic;
   font-weight: var(--font-weight-bold);
   color: var(--color-primary);
 }
 
-.milestoneStats {
-  font-weight: var(--font-weight-normal);
-  color: var(--color-text-tertiary);
+.milestoneTagsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.milestoneTag {
+  font-size: 0.7rem;
+  font-weight: var(--font-weight-semibold);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
 }
 
 .milestoneDetail {
@@ -342,9 +413,12 @@
 }
 
 .statValue {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 700;
   color: var(--color-text);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
 }
 
 .statUnit {
