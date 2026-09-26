@@ -1,0 +1,114 @@
+.loaderWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-10) var(--space-4);
+  text-align: center;
+  width: 100%;
+}
+
+.loaderWrapper.fullPage {
+  min-height: 50vh;
+}
+
+.loaderWrapper.compact {
+  padding: var(--space-4) 0;
+  gap: var(--space-2);
+}
+
+/* ─── Heart Pulse Rings ─── */
+.pulseContainer {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact .pulseContainer {
+  width: 48px;
+  height: 48px;
+}
+
+/* Expanding ripple ring 1 */
+.rippleRing1 {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, hsl(348 55% 52% / 0.15) 0%, hsl(348 55% 52% / 0.02) 70%, transparent 100%);
+  border: 1.5px solid hsl(348 55% 52% / 0.25);
+  animation: ripplePulse 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Expanding ripple ring 2 with delay */
+.rippleRing2 {
+  position: absolute;
+  inset: -6px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, hsl(32 75% 56% / 0.1) 0%, transparent 70%);
+  border: 1px solid hsl(32 75% 56% / 0.2);
+  animation: ripplePulse 2.4s ease-out infinite 0.8s;
+  pointer-events: none;
+}
+
+/* Central glowing bubble */
+.heartBubble {
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-primary-light);
+  box-shadow: 0 4px 16px hsl(348 55% 52% / 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  animation: breatheGlow 2s ease-in-out infinite;
+}
+
+.compact .heartBubble {
+  width: 32px;
+  height: 32px;
+}
+
+.heartIcon {
+  color: var(--color-primary);
+  animation: heartbeat 1.6s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.compact .heartIcon svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ─── Microcopy text ─── */
+.textContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.message {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+  transition: opacity 0.3s ease;
+}
+
+.subMessage {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.compact .message {
+  font-size: var(--font-size-xs);
+}

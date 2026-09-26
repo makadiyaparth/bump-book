@@ -4,8 +4,9 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
-import { getPregnancyInfo, formatPregnancyWeek, getTrimesterLabel } from '@/lib/pregnancy';
+import { getPregnancyInfo, formatPregnancyWeek, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
 import { formatDate, formatDateShort, formatRelativeDate, getGreeting } from '@/lib/utils';
+import JourneyLoader from '@/components/JourneyLoader';
 import type {
   PregnancyProfile,
   PregnancyInfo,
@@ -235,14 +236,12 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className={styles.dashboard}>
-        <div className={styles.greeting}>
-          <h1 className={styles.greetingText}>
-            {greeting} <span className={styles.greetingEmoji}>👋</span>
-          </h1>
-          <p className={styles.greetingWeek} style={{ opacity: 0.5 }}>
-            Loading your journey...
-          </p>
-        </div>
+        <JourneyLoader
+          message="Loading your journey..."
+          subMessage="Fetching your latest updates & health records"
+          cycle
+          size="fullPage"
+        />
       </div>
     );
   }
@@ -268,49 +267,91 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ─── Progress Card ─── */}
-      {pregnancyInfo && (
-        <div className={styles.progressCard}>
-          <div className={styles.progressHeader}>
-            <div>
-              <p className={styles.progressWeek}>
-                Week {pregnancyInfo.currentWeek}
-              </p>
-              <p className={styles.progressWeekLabel}>
-                + {pregnancyInfo.currentDay} day{pregnancyInfo.currentDay !== 1 ? 's' : ''}
-              </p>
+      {/* ─── Progress Card (Minimal, High Contrast, Baby Milestone) ─── */}
+      {pregnancyInfo && (() => {
+        const milestone = getBabyMilestone(pregnancyInfo.currentWeek);
+        return (
+          <div className={styles.progressCard}>
+            <div className={styles.progressHeader}>
+              <div className={styles.progressWeekGroup}>
+                <span className={styles.progressOverline}>Current Stage</span>
+                <div className={styles.progressWeekRow}>
+                  <p className={styles.progressWeek}>Week {pregnancyInfo.currentWeek}</p>
+                  <span className={styles.progressDayBadge}>
+                    +{pregnancyInfo.currentDay} day{pregnancyInfo.currentDay !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.progressBadges}>
+                <span className={styles.progressTrimester}>
+                  {getTrimesterLabel(pregnancyInfo.trimester)}
+                </span>
+                <span className={styles.progressCountdown}>
+                  {pregnancyInfo.daysRemaining} days to go
+                </span>
+              </div>
             </div>
-            <span className={styles.progressTrimester}>
-              {getTrimesterLabel(pregnancyInfo.trimester)}
-            </span>
+
+            <div className={styles.progressBarWrapper}>
+              <div className={styles.progressBarContainer}>
+                <div
+                  className={styles.progressBarFill}
+                  style={{ width: `${pregnancyInfo.progressPercent}%` }}
+                />
+              </div>
+              <div className={styles.progressFooter}>
+                <span>Conception</span>
+                <span className={styles.progressPercentText}>
+                  {Math.round(pregnancyInfo.progressPercent)}% completed
+                </span>
+                <span>Delivery ({formatDateShort(pregnancy!.dueDate)})</span>
+              </div>
+            </div>
+
+            {/* Baby Development Box */}
+            <div className={styles.milestoneBox}>
+              <div className={styles.milestoneIcon}>{milestone.fruitEmoji}</div>
+              <div className={styles.milestoneContent}>
+                <p className={styles.milestoneHeading}>
+                  Baby is the size of a <span className={styles.milestoneFruit}>{milestone.fruit}</span>
+                  <span className={styles.milestoneStats}> • {milestone.lengthCm} • {milestone.weightGrams}</span>
+                </p>
+                <p className={styles.milestoneDetail}>{milestone.detail}</p>
+              </div>
+            </div>
           </div>
-          <div className={styles.progressBarContainer}>
-            <div
-              className={styles.progressBarFill}
-              style={{ width: `${pregnancyInfo.progressPercent}%` }}
-            />
-          </div>
-          <div className={styles.progressFooter}>
-            <span>Conception</span>
-            <span>{Math.round(pregnancyInfo.progressPercent)}%</span>
-            <span>Delivery</span>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ─── Cards Grid ─── */}
       <div className={styles.sectionGrid}>
         {/* Latest Health */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionIcon}>❤️</span>
-            <h2 className={styles.sectionTitle}>Latest Health</h2>
+            <div className={styles.sectionTitleGroup}>
+              <span className={styles.sectionIcon}>❤️</span>
+              <h2 className={styles.sectionTitle}>Latest Health</h2>
+            </div>
+            <div className={styles.sectionActions}>
+              <Link href="/add/health-stats" className={styles.headerAddBtn} title="Log Health Stats">
+                <Plus size={15} />
+              </Link>
+              <Link href="/records/health-stats" className={styles.headerViewAll}>
+                View all
+              </Link>
+            </div>
           </div>
           {latestHealth ? (
             <div className={styles.statsGrid}>
-              {latestHealth.bpSystolic && latestHealth.bpDiastolic && (
+              {latestHealth.bpSystolic && latestHealth.bpDiastolic ? (
                 <div className={styles.statItem}>
-                  <span className={styles.statLabel}>Blood Pressure</span>
+                  <span className={styles.statLabel}>
+                    Blood Pressure
+                    {latestHealth.bpSystolic < 120 && latestHealth.bpDiastolic < 80 && (
+                      <span className={styles.statBadge}>Normal</span>
+                    )}
+                  </span>
                   <p className={styles.statValue}>
                     {latestHealth.bpSystolic}/{latestHealth.bpDiastolic}
                   </p>
@@ -318,8 +359,14 @@ export default function DashboardPage() {
                     {formatDateShort(latestHealth.recordedDate)}
                   </span>
                 </div>
+              ) : (
+                <Link href="/add/health-stats" className={styles.quickLogSlot}>
+                  <Plus size={13} />
+                  <span>Log Blood Pressure</span>
+                </Link>
               )}
-              {latestHealth.weightKg && (
+
+              {latestHealth.weightKg ? (
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Weight</span>
                   <p className={styles.statValue}>
@@ -330,8 +377,14 @@ export default function DashboardPage() {
                     {formatDateShort(latestHealth.recordedDate)}
                   </span>
                 </div>
+              ) : (
+                <Link href="/add/health-stats" className={styles.quickLogSlot}>
+                  <Plus size={13} />
+                  <span>Log Weight</span>
+                </Link>
               )}
-              {latestHealth.bloodSugar && (
+
+              {latestHealth.bloodSugar ? (
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Blood Sugar</span>
                   <p className={styles.statValue}>
@@ -342,8 +395,14 @@ export default function DashboardPage() {
                     {formatDateShort(latestHealth.recordedDate)}
                   </span>
                 </div>
+              ) : (
+                <Link href="/add/health-stats" className={styles.quickLogSlot}>
+                  <Plus size={13} />
+                  <span>Log Blood Sugar</span>
+                </Link>
               )}
-              {latestBaby?.fhrBpm && (
+
+              {latestBaby?.fhrBpm ? (
                 <div className={styles.statItem}>
                   <span className={styles.statLabel}>Baby Heart Rate</span>
                   <p className={styles.statValue}>
@@ -354,13 +413,12 @@ export default function DashboardPage() {
                     {formatDateShort(latestBaby.recordedDate)}
                   </span>
                 </div>
+              ) : (
+                <Link href="/add/baby-stats" className={styles.quickLogSlot}>
+                  <Plus size={13} />
+                  <span>Log Fetal Heart Rate</span>
+                </Link>
               )}
-              {!latestHealth.bpSystolic &&
-                !latestHealth.weightKg &&
-                !latestHealth.bloodSugar &&
-                !latestBaby?.fhrBpm && (
-                  <p className={styles.statEmpty}>No measurements yet</p>
-                )}
             </div>
           ) : (
             <div className={styles.emptyState}>
@@ -376,8 +434,18 @@ export default function DashboardPage() {
         {/* Upcoming Appointments */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionIcon}>📅</span>
-            <h2 className={styles.sectionTitle}>Upcoming</h2>
+            <div className={styles.sectionTitleGroup}>
+              <span className={styles.sectionIcon}>📅</span>
+              <h2 className={styles.sectionTitle}>Upcoming</h2>
+            </div>
+            <div className={styles.sectionActions}>
+              <Link href="/add/appointment" className={styles.headerAddBtn} title="Add Appointment">
+                <Plus size={15} />
+              </Link>
+              <Link href="/records/appointments" className={styles.headerViewAll}>
+                View all
+              </Link>
+            </div>
           </div>
           {upcomingAppointments.length > 0 ? (
             <div className={styles.appointmentList}>
@@ -415,8 +483,18 @@ export default function DashboardPage() {
         {/* Active Medicines */}
         <div className={styles.section}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionIcon}>💊</span>
-            <h2 className={styles.sectionTitle}>Active Medicines</h2>
+            <div className={styles.sectionTitleGroup}>
+              <span className={styles.sectionIcon}>💊</span>
+              <h2 className={styles.sectionTitle}>Active Medicines</h2>
+            </div>
+            <div className={styles.sectionActions}>
+              <Link href="/add/medicine" className={styles.headerAddBtn} title="Add Medicine">
+                <Plus size={15} />
+              </Link>
+              <Link href="/records/medicines" className={styles.headerViewAll}>
+                View all
+              </Link>
+            </div>
           </div>
           {activeMedicines.length > 0 ? (
             <div className={styles.medicineList}>
@@ -446,8 +524,18 @@ export default function DashboardPage() {
         {/* Recent Timeline */}
         <div className={`${styles.section} ${styles.recentSection}`}>
           <div className={styles.sectionHeader}>
-            <span className={styles.sectionIcon}>🕘</span>
-            <h2 className={styles.sectionTitle}>Recent Journey</h2>
+            <div className={styles.sectionTitleGroup}>
+              <span className={styles.sectionIcon}>🕘</span>
+              <h2 className={styles.sectionTitle}>Recent Journey</h2>
+            </div>
+            <div className={styles.sectionActions}>
+              <Link href="/add" className={styles.headerAddBtn} title="Add Any Record">
+                <Plus size={15} />
+              </Link>
+              <Link href="/timeline" className={styles.headerViewAll}>
+                Full timeline →
+              </Link>
+            </div>
           </div>
           {recentTimeline.length > 0 ? (
             <div className={styles.timelineList}>

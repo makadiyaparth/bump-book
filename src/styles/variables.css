@@ -5,38 +5,38 @@
 
 :root {
   /* ─── Color Palette ─── */
-  --color-primary: hsl(340, 65%, 55%);
-  --color-primary-light: hsl(340, 65%, 92%);
-  --color-primary-dark: hsl(340, 65%, 40%);
-  --color-primary-hover: hsl(340, 65%, 48%);
+  --color-primary: hsl(348, 55%, 52%);
+  --color-primary-light: hsl(348, 60%, 94%);
+  --color-primary-dark: hsl(348, 55%, 38%);
+  --color-primary-hover: hsl(348, 55%, 45%);
 
-  --color-secondary: hsl(260, 50%, 60%);
-  --color-secondary-light: hsl(260, 50%, 92%);
-  --color-secondary-dark: hsl(260, 50%, 45%);
+  --color-secondary: hsl(250, 35%, 55%);
+  --color-secondary-light: hsl(250, 40%, 94%);
+  --color-secondary-dark: hsl(250, 40%, 40%);
 
-  --color-accent: hsl(30, 80%, 60%);
-  --color-accent-light: hsl(30, 80%, 92%);
-  --color-accent-dark: hsl(30, 80%, 45%);
+  --color-accent: hsl(32, 75%, 56%);
+  --color-accent-light: hsl(32, 75%, 93%);
+  --color-accent-dark: hsl(32, 75%, 42%);
 
   /* Surfaces */
-  --color-bg: hsl(30, 20%, 98%);
-  --color-bg-alt: hsl(30, 15%, 95%);
+  --color-bg: hsl(30, 25%, 98%);
+  --color-bg-alt: hsl(30, 18%, 95%);
   --color-surface: hsl(0, 0%, 100%);
-  --color-surface-hover: hsl(340, 30%, 97%);
-  --color-surface-active: hsl(340, 25%, 95%);
+  --color-surface-hover: hsl(348, 30%, 98%);
+  --color-surface-active: hsl(348, 25%, 95%);
   --color-surface-elevated: hsl(0, 0%, 100%);
 
   /* Text */
-  --color-text: hsl(240, 10%, 15%);
-  --color-text-secondary: hsl(240, 5%, 45%);
-  --color-text-tertiary: hsl(240, 5%, 60%);
+  --color-text: hsl(240, 12%, 14%);
+  --color-text-secondary: hsl(240, 6%, 42%);
+  --color-text-tertiary: hsl(240, 5%, 58%);
   --color-text-inverse: hsl(0, 0%, 100%);
   --color-text-on-primary: hsl(0, 0%, 100%);
 
   /* Borders */
-  --color-border: hsl(240, 10%, 90%);
-  --color-border-light: hsl(240, 10%, 94%);
-  --color-border-focus: hsl(340, 65%, 55%);
+  --color-border: hsl(240, 8%, 88%);
+  --color-border-light: hsl(240, 8%, 93%);
+  --color-border-focus: hsl(348, 55%, 52%);
 
   /* Semantic */
   --color-success: hsl(150, 60%, 40%);
