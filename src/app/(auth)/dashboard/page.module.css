@@ -1,0 +1,453 @@
+.dashboard {
+  max-width: 900px;
+  animation: fadeIn var(--transition-base) forwards;
+}
+
+/* ─── Greeting ─── */
+.greeting {
+  margin-bottom: var(--space-8);
+}
+
+.greetingText {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: var(--space-1);
+}
+
+.greetingEmoji {
+  margin-left: var(--space-2);
+}
+
+.greetingWeek {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+}
+
+.greetingWeekBold {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+}
+
+.greetingDue {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ─── Progress card ─── */
+.progressCard {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  color: white;
+  margin-bottom: var(--space-6);
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+}
+
+.progressCard::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, hsl(0 0% 100% / 0.1) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+
+.progressWeek {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.progressWeekLabel {
+  font-size: var(--font-size-sm);
+  opacity: 0.8;
+  margin-top: var(--space-1);
+}
+
+.progressTrimester {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  background: hsl(0 0% 100% / 0.2);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  backdrop-filter: blur(4px);
+}
+
+.progressBarContainer {
+  background: hsl(0 0% 100% / 0.2);
+  border-radius: var(--radius-full);
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressBarFill {
+  height: 100%;
+  background: hsl(0 0% 100% / 0.9);
+  border-radius: var(--radius-full);
+  transition: width 1s ease-out;
+  animation: progressFill 1.5s ease-out;
+}
+
+.progressFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+  font-size: var(--font-size-xs);
+  opacity: 0.7;
+}
+
+/* ─── Section grid ─── */
+.sectionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  margin-bottom: var(--space-6);
+}
+
+/* ─── Section card ─── */
+.section {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base);
+}
+
+.section:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.sectionIcon {
+  font-size: 1.1rem;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  letter-spacing: var(--letter-spacing-wide);
+  text-transform: uppercase;
+}
+
+/* ─── Health stats grid ─── */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.statValue {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.statUnit {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-tertiary);
+  margin-left: var(--space-1);
+}
+
+.statDate {
+  font-size: var(--font-size-2xs);
+  color: var(--color-text-tertiary);
+}
+
+.statEmpty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+/* ─── Upcoming appointments ─── */
+.appointmentList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.appointmentItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-fast);
+}
+
+.appointmentItem:hover {
+  background-color: var(--color-surface-hover);
+}
+
+.appointmentDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-cat-appointment);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+.appointmentInfo {
+  flex: 1;
+}
+
+.appointmentPurpose {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.appointmentDoctor {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.appointmentDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-cat-appointment);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+/* ─── Active medicines ─── */
+.medicineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.medicineItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+}
+
+.medicinePill {
+  width: 6px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-cat-medicine);
+  flex-shrink: 0;
+}
+
+.medicineName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  flex: 1;
+}
+
+.medicineDosage {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Recent timeline ─── */
+.recentSection {
+  grid-column: 1 / -1;
+}
+
+.timelineList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.timelineItem {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  transition: background-color var(--transition-fast);
+  cursor: default;
+}
+
+.timelineItem:hover {
+  background-color: var(--color-bg);
+}
+
+.timelineIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.timelineContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.timelineTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.timelineSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timelineDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ─── Empty state ─── */
+.emptyState {
+  text-align: center;
+  padding: var(--space-6);
+}
+
+.emptyEmoji {
+  font-size: 2rem;
+  margin-bottom: var(--space-2);
+}
+
+.emptyText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+.emptyAction {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.emptyAction:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* ─── Setup prompt ─── */
+.setupPrompt {
+  text-align: center;
+  padding: var(--space-16) var(--space-6);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.setupEmoji {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  display: block;
+}
+
+.setupTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-3);
+}
+
+.setupSubtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+  line-height: var(--line-height-relaxed);
+}
+
+.setupButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-8);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  transition: all var(--transition-base);
+}
+
+.setupButton:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg), 0 0 30px hsl(340 65% 55% / 0.25);
+  color: white;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .sectionGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .recentSection {
+    grid-column: 1;
+  }
+
+  .progressHeader {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
