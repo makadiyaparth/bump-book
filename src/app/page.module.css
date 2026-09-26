@@ -1,0 +1,186 @@
+.landing {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-6);
+}
+
+/* ─── Animated background ─── */
+.landing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, hsl(340 65% 92% / 0.6) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, hsl(260 50% 92% / 0.5) 0%, transparent 50%),
+    radial-gradient(ellipse at 60% 80%, hsl(30 80% 92% / 0.4) 0%, transparent 50%),
+    var(--color-bg);
+  z-index: 0;
+}
+
+.landing > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Hero content ─── */
+.hero {
+  text-align: center;
+  max-width: 560px;
+  animation: fadeInUp var(--transition-slow) forwards;
+}
+
+.heroEmoji {
+  font-size: 4rem;
+  margin-bottom: var(--space-4);
+  animation: heartbeat 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+.heroTitle {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text);
+  margin-bottom: var(--space-3);
+  line-height: 1.1;
+}
+
+.heroTitleAccent {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.heroSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-10);
+}
+
+/* ─── Sign in button ─── */
+.signInButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-8);
+  background-color: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-md);
+}
+
+.signInButton:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg), var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+.signInButton:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ─── Features grid ─── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+  max-width: 640px;
+  margin-top: var(--space-16);
+  animation: fadeInUp var(--transition-slow) 300ms forwards;
+  opacity: 0;
+}
+
+.featureCard {
+  text-align: center;
+  padding: var(--space-5);
+  background: hsl(0 0% 100% / 0.7);
+  backdrop-filter: blur(12px);
+  border-radius: var(--radius-xl);
+  border: 1px solid hsl(0 0% 100% / 0.8);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.featureCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.featureIcon {
+  font-size: 1.75rem;
+  margin-bottom: var(--space-2);
+}
+
+.featureLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+}
+
+.featureDesc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* ─── Footer ─── */
+.footer {
+  position: absolute;
+  bottom: var(--space-6);
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.footerLink {
+  color: var(--color-text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ─── Mobile ─── */
+@media (max-width: 640px) {
+  .heroTitle {
+    font-size: var(--font-size-3xl);
+  }
+
+  .heroSubtitle {
+    font-size: var(--font-size-base);
+  }
+
+  .features {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    max-width: 320px;
+  }
+
+  .featureCard {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-align: left;
+    padding: var(--space-4);
+  }
+
+  .featureIcon {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+  }
+}

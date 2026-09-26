@@ -1,0 +1,185 @@
+'use client';
+
+import { useSession, signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useEffect } from 'react';
+import {
+  LayoutDashboard,
+  Clock,
+  BarChart3,
+  Plus,
+  Settings,
+  LogOut,
+} from 'lucide-react';
+import styles from './layout.module.css';
+
+const NAV_ITEMS = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/timeline', label: 'Timeline', icon: Clock },
+  { href: '/charts', label: 'Charts', icon: BarChart3 },
+  { href: '/settings', label: 'Settings', icon: Settings },
+];
+
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className={styles.authLayout}>
+        <main className={styles.mainContent} style={{ marginLeft: 0 }}>
+          <p style={{ color: 'var(--color-text-tertiary)', textAlign: 'center', marginTop: 'var(--space-20)' }}>
+            Loading...
+          </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  return (
+    <div className={styles.authLayout}>
+      {/* Desktop Sidebar */}
+      <aside className={styles.sidebar}>
+        <Link href="/dashboard" className={styles.sidebarLogo}>
+          <span className={styles.logoEmoji}>🤰</span>
+          <div>
+            <span className={styles.logoText}>Pregnancy Journey</span>
+            <span className={styles.logoTextAccent}>Tracker</span>
+          </div>
+        </Link>
+
+        <nav className={styles.sidebarNav}>
+          {NAV_ITEMS.slice(0, 3).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.navLink} ${
+                isActive(item.href) ? styles.navLinkActive : ''
+              }`}
+            >
+              <item.icon className={styles.navIcon} />
+              {item.label}
+            </Link>
+          ))}
+
+          <div className={styles.navDivider} />
+
+          <Link
+            href="/add"
+            className={`${styles.navLink} ${
+              isActive('/add') ? styles.navLinkActive : ''
+            }`}
+          >
+            <Plus className={styles.navIcon} />
+            Add Record
+          </Link>
+
+          <div className={styles.navDivider} />
+
+          <Link
+            href="/settings"
+            className={`${styles.navLink} ${
+              isActive('/settings') ? styles.navLinkActive : ''
+            }`}
+          >
+            <Settings className={styles.navIcon} />
+            Settings
+          </Link>
+        </nav>
+
+        <div className={styles.sidebarUser}>
+          {session.user?.image && (
+            <img
+              src={session.user.image}
+              alt=""
+              className={styles.userAvatar}
+              referrerPolicy="no-referrer"
+            />
+          )}
+          <div className={styles.userInfo}>
+            <p className={styles.userName}>{session.user?.name}</p>
+            <p className={styles.userEmail}>{session.user?.email}</p>
+          </div>
+          <button
+            className={styles.signOutButton}
+            onClick={() => signOut({ callbackUrl: '/' })}
+            title="Sign out"
+          >
+            <LogOut size={16} />
+          </button>
+        </div>
+      </aside>
+
+      {/* Mobile Header */}
+      <header className={styles.mobileHeader}>
+        <Link href="/dashboard" className={styles.mobileLogoLink}>
+          <span className={styles.logoEmoji}>🤰</span>
+          <span className={styles.mobileLogoText}>Journey</span>
+        </Link>
+        {session.user?.image && (
+          <Link href="/settings">
+            <img
+              src={session.user.image}
+              alt=""
+              className={styles.mobileAvatar}
+              referrerPolicy="no-referrer"
+            />
+          </Link>
+        )}
+      </header>
+
+      {/* Main content */}
+      <main className={styles.mainContent}>{children}</main>
+
+      {/* Mobile FAB */}
+      <Link href="/add" className={styles.fab}>
+        <Plus className={styles.fabIcon} />
+      </Link>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className={styles.bottomNav}>
+        <div className={styles.bottomNavInner}>
+          {NAV_ITEMS.slice(0, 3).map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`${styles.bottomNavLink} ${
+                isActive(item.href) ? styles.bottomNavLinkActive : ''
+              }`}
+            >
+              <item.icon className={styles.bottomNavIcon} />
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="/settings"
+            className={`${styles.bottomNavLink} ${
+              isActive('/settings') ? styles.bottomNavLinkActive : ''
+            }`}
+          >
+            <Settings className={styles.bottomNavIcon} />
+            Settings
+          </Link>
+        </div>
+      </nav>
+    </div>
+  );
+}
