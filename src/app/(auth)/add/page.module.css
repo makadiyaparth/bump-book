@@ -81,8 +81,9 @@
 }
 
 .typeLabel {
+  font-family: var(--font-playful);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
   color: var(--color-text);
   text-align: center;
 }

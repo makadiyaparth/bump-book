@@ -75,7 +75,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background-color: var(--color-primary);
   color: white;
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
@@ -87,6 +87,7 @@
 }
 
 .addButton:hover {
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md), var(--shadow-glow);
 }
@@ -170,9 +171,10 @@
 }
 
 .badge {
+  font-family: var(--font-playful);
   display: inline-block;
   font-size: var(--font-size-2xs);
-  font-weight: var(--font-weight-semibold);
+  font-weight: 600;
   text-transform: uppercase;
   padding: 2px 8px;
   border-radius: var(--radius-full);

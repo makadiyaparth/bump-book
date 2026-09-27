@@ -230,7 +230,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-6);
-  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: var(--radius-lg);
@@ -242,6 +242,7 @@
 }
 
 .saveBtn:hover {
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md), var(--shadow-glow);
 }

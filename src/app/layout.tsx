@@ -1,24 +1,31 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans, Fraunces, Caveat } from 'next/font/google';
+import { Inter, Fraunces, Fredoka, Caveat } from 'next/font/google';
 import AuthProvider from '@/components/AuthProvider';
 import './globals.css';
 
-const sans = Plus_Jakarta_Sans({
+const sans = Inter({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-sans',
+  variable: '--font-inter',
 });
 
 const display = Fraunces({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-display',
+  variable: '--font-fraunces',
+});
+
+const playful = Fredoka({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fredoka',
+  weight: ['400', '500', '600', '700'],
 });
 
 const handwriting = Caveat({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-handwriting',
+  variable: '--font-caveat',
   weight: ['500', '600', '700'],
 });
 
@@ -60,7 +67,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${handwriting.variable}`}>
+    <html
+      lang="en"
+      className={`${sans.variable} ${display.variable} ${playful.variable} ${handwriting.variable}`}
+    >
       <body>
         <AuthProvider>{children}</AuthProvider>
       </body>
