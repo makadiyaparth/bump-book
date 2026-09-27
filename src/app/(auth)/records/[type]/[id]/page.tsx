@@ -205,7 +205,7 @@ export default function RecordDetailPage({
                   setIsEditing(false);
                 }}
               >
-                <X size={15} /> Cancel
+                <X size={15} /> <span>Cancel</span>
               </button>
               <button
                 className={`${styles.actionBtn}`}
@@ -217,7 +217,7 @@ export default function RecordDetailPage({
                 onClick={handleUpdate}
                 disabled={isSaving}
               >
-                <Check size={15} /> {isSaving ? 'Saving...' : 'Save'}
+                <Check size={15} /> <span>{isSaving ? 'Saving...' : 'Save'}</span>
               </button>
             </>
           )}

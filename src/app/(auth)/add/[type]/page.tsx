@@ -145,7 +145,7 @@ export default function AddRecordFormPage({
             ) : (
               <>
                 <Check size={16} />
-                Save
+                <span>Save</span>
               </>
             )}
           </button>
