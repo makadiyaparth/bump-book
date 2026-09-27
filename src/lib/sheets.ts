@@ -69,9 +69,11 @@ export class SheetsService {
     if (!rows || rows.length < 2) return [];
 
     const headers = rows[0];
+    const schemaHeaders = SHEET_HEADERS[tab] || [];
+    const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
     return rows.slice(1).map((row) => {
       const obj: Record<string, string> = {};
-      headers.forEach((header: string, i: number) => {
+      headerList.forEach((header: string, i: number) => {
         obj[header] = row[i] || '';
       });
       return obj;

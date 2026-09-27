@@ -186,6 +186,7 @@ export default function DashboardPage() {
           const parts: string[] = [];
           if (h.bp_systolic && h.bp_diastolic) parts.push(`BP ${h.bp_systolic}/${h.bp_diastolic}`);
           if (h.weight_kg) parts.push(`Weight ${h.weight_kg} kg`);
+          if (h.temperature) parts.push(`Temp ${h.temperature} °C`);
           timelineEntries.push({
             id: h.id,
             date: h.recorded_date,

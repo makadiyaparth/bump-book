@@ -10,7 +10,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { RECORD_TYPES } from '@/lib/types';
-import { formatDateShort } from '@/lib/utils';
+import { formatDateShort, formatCurrency } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
 import styles from '../records.module.css';
 
@@ -62,6 +62,13 @@ export default function RecordTypeListPage({
     );
   }, [records, searchQuery]);
 
+  const totalExpense = useMemo(() => {
+    return records.reduce((sum, r) => {
+      const num = parseFloat(r.cost || '');
+      return isNaN(num) ? sum : sum + num;
+    }, 0);
+  }, [records]);
+
   if (!recordType) {
     return (
       <div className={styles.recordsPage}>
@@ -93,6 +100,14 @@ export default function RecordTypeListPage({
               <p className={styles.countSubtitle}>
                 {records.length} {records.length === 1 ? 'entry' : 'entries'}{' '}
                 recorded
+                {totalExpense > 0 && (
+                  <>
+                    {' • '}
+                    <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                      Total: {formatCurrency(totalExpense)}
+                    </span>
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -231,6 +246,14 @@ function renderCardSummary(type: string, r: Record<string, string>) {
               </span>
             </div>
           )}
+          {r.cost && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Cost</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                {formatCurrency(r.cost)}
+              </span>
+            </div>
+          )}
         </>
       );
 
@@ -263,6 +286,14 @@ function renderCardSummary(type: string, r: Record<string, string>) {
               </span>
             </div>
           )}
+          {r.cost && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Cost</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                {formatCurrency(r.cost)}
+              </span>
+            </div>
+          )}
         </>
       );
 
@@ -292,6 +323,14 @@ function renderCardSummary(type: string, r: Record<string, string>) {
               </span>
             </div>
           )}
+          {r.cost && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Cost</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                {formatCurrency(r.cost)}
+              </span>
+            </div>
+          )}
         </>
       );
 
@@ -318,6 +357,18 @@ function renderCardSummary(type: string, r: Record<string, string>) {
               <span className={styles.detailValue}>
                 {r.blood_sugar} mg/dL
               </span>
+            </div>
+          )}
+          {r.temperature && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Temperature</span>
+              <span className={styles.detailValue}>{r.temperature} °C</span>
+            </div>
+          )}
+          {r.hemoglobin && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Hemoglobin</span>
+              <span className={styles.detailValue}>{r.hemoglobin} g/dL</span>
             </div>
           )}
         </>
@@ -368,6 +419,14 @@ function renderCardSummary(type: string, r: Record<string, string>) {
             <div className={styles.detailItem}>
               <span className={styles.detailLabel}>Status</span>
               <span className={styles.detailValue}>{r.status}</span>
+            </div>
+          )}
+          {r.cost && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Estimated Fee</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                {formatCurrency(r.cost)}
+              </span>
             </div>
           )}
         </>

@@ -281,6 +281,24 @@ function renderFields(
             </div>
           </div>
           <div className={formStyles.field}>
+            <label htmlFor="cost">
+              Cost / Consultation Fee <span className={formStyles.fieldOptional}>(optional)</span>
+            </label>
+            <div className={formStyles.inputWithPrefix}>
+              <span className={formStyles.inputPrefix}>₹</span>
+              <input
+                id="cost"
+                type="number"
+                step="any"
+                min="0"
+                value={data.cost || ''}
+                onChange={(e) => update('cost', e.target.value)}
+                placeholder="0.00"
+                inputMode="decimal"
+              />
+            </div>
+          </div>
+          <div className={formStyles.field}>
             <label htmlFor="notes">Additional Notes</label>
             <textarea
               id="notes"
@@ -375,16 +393,36 @@ function renderFields(
               placeholder="Why was this prescribed?"
             />
           </div>
-          <div className={formStyles.field}>
-            <label htmlFor="is-active">Status</label>
-            <select
-              id="is-active"
-              value={data.is_active || 'TRUE'}
-              onChange={(e) => update('is_active', e.target.value)}
-            >
-              <option value="TRUE">Currently taking</option>
-              <option value="FALSE">Stopped</option>
-            </select>
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="is-active">Status</label>
+              <select
+                id="is-active"
+                value={data.is_active || 'TRUE'}
+                onChange={(e) => update('is_active', e.target.value)}
+              >
+                <option value="TRUE">Currently taking</option>
+                <option value="FALSE">Stopped</option>
+              </select>
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="cost">
+                Cost <span className={formStyles.fieldOptional}>(optional)</span>
+              </label>
+              <div className={formStyles.inputWithPrefix}>
+                <span className={formStyles.inputPrefix}>₹</span>
+                <input
+                  id="cost"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={data.cost || ''}
+                  onChange={(e) => update('cost', e.target.value)}
+                  placeholder="0.00"
+                  inputMode="decimal"
+                />
+              </div>
+            </div>
           </div>
           <div className={formStyles.field}>
             <label htmlFor="notes">Notes</label>
@@ -452,15 +490,35 @@ function renderFields(
               placeholder="Key results or findings..."
             />
           </div>
-          <div className={formStyles.field}>
-            <label htmlFor="ordered-by">Ordered By</label>
-            <input
-              id="ordered-by"
-              type="text"
-              value={data.ordered_by || ''}
-              onChange={(e) => update('ordered_by', e.target.value)}
-              placeholder="Doctor name"
-            />
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="ordered-by">Ordered By</label>
+              <input
+                id="ordered-by"
+                type="text"
+                value={data.ordered_by || ''}
+                onChange={(e) => update('ordered_by', e.target.value)}
+                placeholder="Doctor name"
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="cost">
+                Test / Scan Cost <span className={formStyles.fieldOptional}>(optional)</span>
+              </label>
+              <div className={formStyles.inputWithPrefix}>
+                <span className={formStyles.inputPrefix}>₹</span>
+                <input
+                  id="cost"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={data.cost || ''}
+                  onChange={(e) => update('cost', e.target.value)}
+                  placeholder="0.00"
+                  inputMode="decimal"
+                />
+              </div>
+            </div>
           </div>
           <div className={formStyles.field}>
             <label>
@@ -585,14 +643,14 @@ function renderFields(
           </div>
           <div className={formStyles.fieldRow}>
             <div className={formStyles.field}>
-              <label htmlFor="temperature">Temperature (°F)</label>
+              <label htmlFor="temperature">Temperature (°C)</label>
               <input
                 id="temperature"
                 type="number"
                 step="0.1"
                 value={data.temperature || ''}
                 onChange={(e) => update('temperature', e.target.value)}
-                placeholder="e.g., 98.6"
+                placeholder="e.g., 36.8"
               />
             </div>
             <div className={formStyles.field}>
@@ -837,17 +895,37 @@ function renderFields(
               />
             </div>
           </div>
-          <div className={formStyles.field}>
-            <label htmlFor="status">Status</label>
-            <select
-              id="status"
-              value={data.status || 'Upcoming'}
-              onChange={(e) => update('status', e.target.value)}
-            >
-              <option value="Upcoming">Upcoming</option>
-              <option value="Completed">Completed</option>
-              <option value="Cancelled">Cancelled</option>
-            </select>
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="status">Status</label>
+              <select
+                id="status"
+                value={data.status || 'Upcoming'}
+                onChange={(e) => update('status', e.target.value)}
+              >
+                <option value="Upcoming">Upcoming</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="cost">
+                Estimated Fee / Cost <span className={formStyles.fieldOptional}>(optional)</span>
+              </label>
+              <div className={formStyles.inputWithPrefix}>
+                <span className={formStyles.inputPrefix}>₹</span>
+                <input
+                  id="cost"
+                  type="number"
+                  step="any"
+                  min="0"
+                  value={data.cost || ''}
+                  onChange={(e) => update('cost', e.target.value)}
+                  placeholder="0.00"
+                  inputMode="decimal"
+                />
+              </div>
+            </div>
           </div>
           <div className={formStyles.field}>
             <label htmlFor="notes">Notes</label>

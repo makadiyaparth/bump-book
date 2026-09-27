@@ -76,6 +76,29 @@
   font-weight: var(--font-weight-normal);
 }
 
+.inputWithPrefix {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.inputPrefix {
+  position: absolute;
+  left: var(--space-4);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-base);
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+}
+
+.inputWithPrefix input {
+  padding-left: var(--space-8);
+}
+
+
 /* ─── Actions ─── */
 .formActions {
   display: flex;

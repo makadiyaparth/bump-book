@@ -14,7 +14,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { RECORD_TYPES } from '@/lib/types';
-import { formatDate } from '@/lib/utils';
+import { formatDate, formatCurrency } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
 import styles from '../../records.module.css';
 import formStyles from '@/styles/forms.module.css';
@@ -240,7 +240,17 @@ export default function RecordDetailPage({
                   recordType.label}
               </h1>
               {dateValue && (
-                <p className={styles.countSubtitle}>{formatDate(dateValue)}</p>
+                <p className={styles.countSubtitle}>
+                  {formatDate(dateValue)}
+                  {record.cost && (
+                    <>
+                      {' • '}
+                      <span style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                        {formatCurrency(record.cost)}
+                      </span>
+                    </>
+                  )}
+                </p>
               )}
             </div>
           </div>
@@ -272,9 +282,12 @@ export default function RecordDetailPage({
                 (k) => !['id', 'created_at', 'updated_at'].includes(k)
               )
               .map((key) => {
-                const label = key
-                  .replace(/_/g, ' ')
-                  .replace(/\b\w/g, (c) => c.toUpperCase());
+                const label =
+                  key === 'temperature'
+                    ? 'Temperature (°C)'
+                    : key
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
                 const isLongText = [
                   'doctor_observations',
                   'result_summary',
@@ -299,6 +312,27 @@ export default function RecordDetailPage({
                         type="date"
                         value={editFormData[key] || ''}
                         onChange={(e) => updateEditField(key, e.target.value)}
+                      />
+                    ) : key === 'cost' ? (
+                      <div className={formStyles.inputWithPrefix}>
+                        <span className={formStyles.inputPrefix}>₹</span>
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={editFormData[key] || ''}
+                          onChange={(e) => updateEditField(key, e.target.value)}
+                          placeholder="0.00"
+                          inputMode="decimal"
+                        />
+                      </div>
+                    ) : key === 'temperature' ? (
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={editFormData[key] || ''}
+                        onChange={(e) => updateEditField(key, e.target.value)}
+                        placeholder="e.g., 36.8"
                       />
                     ) : (
                       <input
@@ -328,9 +362,12 @@ export default function RecordDetailPage({
                   ) && v
               )
               .map(([key, value]) => {
-                const label = key
-                  .replace(/_/g, ' ')
-                  .replace(/\b\w/g, (c) => c.toUpperCase());
+                const label =
+                  key === 'temperature'
+                    ? 'Temperature (°C)'
+                    : key
+                        .replace(/_/g, ' ')
+                        .replace(/\b\w/g, (c) => c.toUpperCase());
                 const isLong = String(value).length > 60 || key.includes('notes') || key.includes('content') || key.includes('observations');
 
                 return (
@@ -347,9 +384,19 @@ export default function RecordDetailPage({
                     ) : (
                       <div
                         className={styles.detailValue}
-                        style={{ fontSize: 'var(--font-size-base)', fontWeight: 500 }}
+                        style={{
+                          fontSize: 'var(--font-size-base)',
+                          fontWeight: key === 'cost' ? 600 : 500,
+                          color: key === 'cost' ? 'var(--color-success)' : undefined,
+                        }}
                       >
-                        {key.includes('date') ? formatDate(value) : value}
+                        {key === 'cost'
+                          ? formatCurrency(value)
+                          : key === 'temperature'
+                          ? `${value} °C`
+                          : key.includes('date')
+                          ? formatDate(value)
+                          : value}
                       </div>
                     )}
                   </div>

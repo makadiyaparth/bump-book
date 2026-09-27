@@ -158,3 +158,26 @@ export function groupBy<T>(items: T[], keyFn: (item: T) => string): Record<strin
     return acc;
   }, {} as Record<string, T[]>);
 }
+
+/**
+ * Format a numeric or string amount as currency in INR (₹).
+ * e.g. 150 -> "₹150", 1500 -> "₹1,500", 150000 -> "₹1,50,000"
+ */
+export function formatCurrency(
+  amount: number | string | null | undefined,
+  currencySymbol = '₹'
+): string {
+  if (amount === null || amount === undefined || amount === '') return '';
+  const num =
+    typeof amount === 'number'
+      ? amount
+      : parseFloat(String(amount).replace(/[^0-9.-]+/g, ''));
+  if (isNaN(num)) return '';
+
+  const formatted = num.toLocaleString('en-IN', {
+    minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return `${currencySymbol}${formatted}`;
+}
+

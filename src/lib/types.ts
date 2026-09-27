@@ -37,6 +37,7 @@ export interface DoctorVisit {
   dietAdvice: string;
   nextAppointment: string;
   questionsForDoctor: string;
+  cost?: number | string | null;
   notes: string;
   createdAt: string;
 }
@@ -51,6 +52,7 @@ export interface Medicine {
   endDate: string;
   prescribedBy: string;
   reason: string;
+  cost?: number | string | null;
   isActive: boolean;
   notes: string;
   createdAt: string;
@@ -66,6 +68,7 @@ export interface Test {
   resultSummary: string;
   reportLink: string;
   orderedBy: string;
+  cost?: number | string | null;
   notes: string;
   createdAt: string;
 }
@@ -91,7 +94,7 @@ export interface HealthStats {
   bpSystolic: number | null;
   bpDiastolic: number | null;
   bloodSugar: number | null;
-  temperature: number | null;
+  temperature: number | null; // in °C
   hemoglobin: number | null;
   notes: string;
   createdAt: string;
@@ -122,6 +125,7 @@ export interface Appointment {
   hospital: string;
   purpose: string;
   status: 'Upcoming' | 'Completed' | 'Cancelled';
+  cost?: number | string | null;
   notes: string;
   createdAt: string;
 }
@@ -261,15 +265,15 @@ export const SHEET_HEADERS: Record<string, string[]> = {
     'id', 'visit_date', 'doctor_name', 'hospital', 'reason',
     'symptoms_discussed', 'examination_notes', 'tests_ordered',
     'doctor_observations', 'medicines_prescribed', 'restrictions',
-    'diet_advice', 'next_appointment', 'questions_for_doctor', 'notes', 'created_at',
+    'diet_advice', 'next_appointment', 'questions_for_doctor', 'cost', 'notes', 'created_at',
   ],
   [SHEET_TABS.medicines]: [
     'id', 'medicine_name', 'dosage', 'frequency', 'start_date',
-    'end_date', 'prescribed_by', 'reason', 'is_active', 'notes', 'created_at',
+    'end_date', 'prescribed_by', 'reason', 'cost', 'is_active', 'notes', 'created_at',
   ],
   [SHEET_TABS.tests]: [
     'id', 'test_name', 'test_date', 'reason', 'status',
-    'result_summary', 'report_link', 'ordered_by', 'notes', 'created_at',
+    'result_summary', 'report_link', 'ordered_by', 'cost', 'notes', 'created_at',
   ],
   [SHEET_TABS.reports]: [
     'id', 'report_type', 'report_date', 'file_name',
@@ -286,7 +290,7 @@ export const SHEET_HEADERS: Record<string, string[]> = {
   ],
   [SHEET_TABS.appointments]: [
     'id', 'appointment_date', 'appointment_time', 'doctor_name',
-    'hospital', 'purpose', 'status', 'notes', 'created_at',
+    'hospital', 'purpose', 'status', 'cost', 'notes', 'created_at',
   ],
   [SHEET_TABS.milestones]: [
     'id', 'milestone_type', 'milestone_date', 'pregnancy_week',

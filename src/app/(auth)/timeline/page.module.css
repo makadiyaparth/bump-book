@@ -303,6 +303,16 @@
   color: var(--color-primary-dark);
 }
 
+.costTag {
+  font-size: var(--font-size-2xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+
 .entryTitle {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);

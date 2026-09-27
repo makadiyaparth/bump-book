@@ -9,7 +9,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from 'lucide-react';
-import { formatDateShort, groupBy } from '@/lib/utils';
+import { formatDateShort, formatCurrency, groupBy } from '@/lib/utils';
 import { RECORD_TYPES } from '@/lib/types';
 import type { RecordType } from '@/lib/types';
 import JourneyLoader from '@/components/JourneyLoader';
@@ -26,6 +26,7 @@ interface TimelineItem {
   color: string;
   driveLink?: string;
   pregnancyWeek?: string;
+  cost?: string;
 }
 
 export default function TimelinePage() {
@@ -85,6 +86,7 @@ export default function TimelinePage() {
                 icon: '🩺',
                 color: 'var(--color-cat-doctor)',
                 pregnancyWeek: calcWeek(r.visit_date),
+                cost: r.cost,
               });
             }
           }
@@ -112,6 +114,7 @@ export default function TimelinePage() {
                 icon: '💊',
                 color: 'var(--color-cat-medicine)',
                 pregnancyWeek: calcWeek(r.start_date),
+                cost: r.cost,
               });
             }
           }
@@ -136,6 +139,7 @@ export default function TimelinePage() {
                 color: 'var(--color-cat-test)',
                 driveLink: r.report_link,
                 pregnancyWeek: calcWeek(r.test_date),
+                cost: r.cost,
               });
             }
           }
@@ -152,6 +156,7 @@ export default function TimelinePage() {
                 details.push(`BP ${r.bp_systolic}/${r.bp_diastolic}`);
               if (r.weight_kg) details.push(`${r.weight_kg} kg`);
               if (r.blood_sugar) details.push(`Sugar ${r.blood_sugar} mg/dL`);
+              if (r.temperature) details.push(`Temp ${r.temperature} °C`);
               if (r.hemoglobin) details.push(`Hb ${r.hemoglobin} g/dL`);
 
               timelineList.push({
@@ -219,6 +224,7 @@ export default function TimelinePage() {
                 icon: '📅',
                 color: 'var(--color-cat-appointment)',
                 pregnancyWeek: calcWeek(r.appointment_date),
+                cost: r.cost,
               });
             }
           }
@@ -433,6 +439,11 @@ export default function TimelinePage() {
                           {item.pregnancyWeek && (
                             <span className={styles.weekTag}>
                               {item.pregnancyWeek}
+                            </span>
+                          )}
+                          {item.cost && (
+                            <span className={styles.costTag}>
+                              {formatCurrency(item.cost)}
                             </span>
                           )}
                         </div>
