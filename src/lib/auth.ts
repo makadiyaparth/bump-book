@@ -1,6 +1,6 @@
 /* ============================================
    NextAuth Configuration
-   Google OAuth with Sheets & Drive scopes
+   Google OAuth with Drive (drive.file) scope
    ============================================ */
 
 import type { AuthOptions } from 'next-auth';
@@ -32,7 +32,6 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
    'openid',
    'email',
    'profile',
-   'https://www.googleapis.com/auth/spreadsheets',
    'https://www.googleapis.com/auth/drive.file',
  ].join(' ');
 

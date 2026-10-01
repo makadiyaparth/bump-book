@@ -76,12 +76,8 @@ export default function PrivacyPolicyPage() {
               </li>
               <li>
                 <strong>Google Drive (drive.file scope):</strong> Allows the application to create and manage <em>only</em> the files
-                and folders created by Bump Book (such as your dedicated pregnancy spreadsheet and any ultrasound/report
+                and folders created by Bump Book (such as your dedicated pregnancy journal spreadsheet and any ultrasound/report
                 files you upload). This scope does <strong>not</strong> grant access to any other files or folders in your Google Drive.
-              </li>
-              <li>
-                <strong>Google Sheets (spreadsheets scope):</strong> Allows the application to create, read, and write entries
-                (vitals, appointments, fetal measurements, symptoms, and milestones) within your dedicated pregnancy journal spreadsheet.
               </li>
             </ul>
           </section>

@@ -126,7 +126,6 @@ When a user signs in and completes onboarding, a spreadsheet named `Bump Book â€
      - `openid`
      - `https://www.googleapis.com/auth/userinfo.email`
      - `https://www.googleapis.com/auth/userinfo.profile`
-     - `https://www.googleapis.com/auth/spreadsheets`
      - `https://www.googleapis.com/auth/drive.file`
    - Under **Test Users**, add your personal Google email address (while in "Testing" mode).
 5. Create OAuth 2.0 Credentials:
