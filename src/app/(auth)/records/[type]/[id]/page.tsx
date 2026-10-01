@@ -16,6 +16,7 @@ import {
 import { RECORD_TYPES } from '@/lib/types';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
+import { invalidateSheetTab } from '@/lib/useSheetData';
 import styles from '../../records.module.css';
 import formStyles from '@/styles/forms.module.css';
 
@@ -90,6 +91,7 @@ export default function RecordDetailPage({
 
       if (!res.ok) throw new Error('Failed to update record');
 
+      invalidateSheetTab(recordType.sheetTab);
       setRecord(editFormData);
       setIsEditing(false);
       showToast('Record updated successfully');
@@ -117,6 +119,7 @@ export default function RecordDetailPage({
 
       if (!res.ok) throw new Error('Failed to delete record');
 
+      invalidateSheetTab(recordType.sheetTab);
       router.push(`/records/${type}`);
     } catch (err) {
       console.error('Error deleting record:', err);

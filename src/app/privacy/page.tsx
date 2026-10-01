@@ -112,6 +112,9 @@ export default function PrivacyPolicyPage() {
                 replicate your health records onto any third-party database or server.
               </li>
               <li>
+                <strong>Temporary In-Memory Performance Caching:</strong> To adhere to Google API rate limits and provide instant navigation across your journal screens without delay, temporary in-memory caching (RAM) is used while your session is active. No permanent copies of your records are retained on our servers, and cache entries expire automatically or upon signing out.
+              </li>
+              <li>
                 <strong>No Sale or Sharing of Data:</strong> We never sell, rent, monetize, or share your personal or health data with
                 advertisers, data brokers, or third-party marketing entities.
               </li>

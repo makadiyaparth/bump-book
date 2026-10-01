@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Search,
   Plus,
@@ -13,6 +13,7 @@ import { formatDateShort, formatCurrency, groupBy } from '@/lib/utils';
 import { RECORD_TYPES } from '@/lib/types';
 import type { RecordType } from '@/lib/types';
 import JourneyLoader from '@/components/JourneyLoader';
+import { useSheetData } from '@/lib/useSheetData';
 import styles from './page.module.css';
 
 interface TimelineItem {
@@ -30,265 +31,229 @@ interface TimelineItem {
 }
 
 export default function TimelinePage() {
-  const { data: session } = useSession();
-  const [items, setItems] = useState<TimelineItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { status } = useSession();
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    async function loadTimelineData() {
-      if (!session?.accessToken) {
-        setLoading(false);
-        return;
-      }
+  const { data: pregRows, isLoading: pregLoading } = useSheetData('Pregnancy');
+  const { data: doctorVisitsRows, isLoading: visitsLoading } = useSheetData('DoctorVisits');
+  const { data: medicinesRows } = useSheetData('Medicines');
+  const { data: testsRows } = useSheetData('Tests');
+  const { data: healthStatsRows } = useSheetData('HealthStats');
+  const { data: babyStatsRows } = useSheetData('BabyStats');
+  const { data: appointmentsRows } = useSheetData('Appointments');
+  const { data: milestonesRows } = useSheetData('Milestones');
+  const { data: notesRows } = useSheetData('Notes');
 
-      try {
-        // Fetch pregnancy info to compute weeks
-        let userLmp: string | null = null;
-        try {
-          const pregRes = await fetch('/api/sheets/Pregnancy');
-          const pregData = await pregRes.json();
-          if (pregData.data?.[0]?.lmp_date) {
-            userLmp = pregData.data[0].lmp_date;
-          }
-        } catch {
-          // ignore
-        }
+  const userLmp = useMemo(() => {
+    return pregRows?.[0]?.lmp_date || null;
+  }, [pregRows]);
 
-        const calcWeek = (dateStr: string): string | undefined => {
-          if (!userLmp || !dateStr) return undefined;
-          const diffMs = new Date(dateStr).getTime() - new Date(userLmp).getTime();
-          const totalDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-          if (totalDays < 0 || totalDays > 300) return undefined;
-          const weeks = Math.floor(totalDays / 7);
-          const days = totalDays % 7;
-          return days > 0 ? `Week ${weeks} + ${days}d` : `Week ${weeks}`;
-        };
+  const items = useMemo<TimelineItem[]>(() => {
+    const calcWeek = (dateStr: string): string | undefined => {
+      if (!userLmp || !dateStr) return undefined;
+      const diffMs = new Date(dateStr).getTime() - new Date(userLmp).getTime();
+      const totalDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+      if (totalDays < 0 || totalDays > 300) return undefined;
+      const weeks = Math.floor(totalDays / 7);
+      const days = totalDays % 7;
+      return days > 0 ? `Week ${weeks} + ${days}d` : `Week ${weeks}`;
+    };
 
-        const timelineList: TimelineItem[] = [];
+    const timelineList: TimelineItem[] = [];
 
-        // Fetch DoctorVisits
-        try {
-          const res = await fetch('/api/sheets/DoctorVisits');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.visit_date,
-                type: 'doctor-visit',
-                typeLabel: 'Doctor Visit',
-                title: r.doctor_name ? `Dr. ${r.doctor_name}` : 'Doctor Visit',
-                subtitle: [r.hospital, r.reason, r.symptoms_discussed]
-                  .filter(Boolean)
-                  .join(' • '),
-                icon: '🩺',
-                color: 'var(--color-cat-doctor)',
-                pregnancyWeek: calcWeek(r.visit_date),
-                cost: r.cost,
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch Medicines
-        try {
-          const res = await fetch('/api/sheets/Medicines');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.start_date,
-                type: 'medicine',
-                typeLabel: 'Medicine',
-                title: r.medicine_name || 'Prescription',
-                subtitle: [
-                  r.dosage,
-                  r.frequency,
-                  r.is_active === 'FALSE' ? 'Stopped' : 'Active',
-                ]
-                  .filter(Boolean)
-                  .join(' • '),
-                icon: '💊',
-                color: 'var(--color-cat-medicine)',
-                pregnancyWeek: calcWeek(r.start_date),
-                cost: r.cost,
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch Tests
-        try {
-          const res = await fetch('/api/sheets/Tests');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.test_date,
-                type: 'test',
-                typeLabel: 'Test & Lab',
-                title: r.test_name || 'Lab Test',
-                subtitle: [r.status, r.result_summary, r.reason]
-                  .filter(Boolean)
-                  .join(' • '),
-                icon: '🧪',
-                color: 'var(--color-cat-test)',
-                driveLink: r.report_link,
-                pregnancyWeek: calcWeek(r.test_date),
-                cost: r.cost,
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch HealthStats
-        try {
-          const res = await fetch('/api/sheets/HealthStats');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              const details = [];
-              if (r.bp_systolic && r.bp_diastolic)
-                details.push(`BP ${r.bp_systolic}/${r.bp_diastolic}`);
-              if (r.weight_kg) details.push(`${r.weight_kg} kg`);
-              if (r.blood_sugar) details.push(`Sugar ${r.blood_sugar} mg/dL`);
-              if (r.temperature) details.push(`Temp ${r.temperature} °C`);
-              if (r.hemoglobin) details.push(`Hb ${r.hemoglobin} g/dL`);
-
-              timelineList.push({
-                id: r.id,
-                date: r.recorded_date,
-                type: 'health-stats',
-                typeLabel: 'Health Measurement',
-                title: 'Health Measurement',
-                subtitle: details.join(' • ') || r.notes || 'Recorded vitals',
-                icon: '❤️',
-                color: 'var(--color-cat-health)',
-                pregnancyWeek: calcWeek(r.recorded_date),
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch BabyStats
-        try {
-          const res = await fetch('/api/sheets/BabyStats');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              const details = [];
-              if (r.fhr_bpm) details.push(`FHR ${r.fhr_bpm} bpm`);
-              if (r.baby_weight_grams) details.push(`${r.baby_weight_grams} g`);
-              if (r.movement_felt === 'TRUE') details.push('Movement felt');
-              if (r.movement_count) details.push(`${r.movement_count} kicks`);
-
-              timelineList.push({
-                id: r.id,
-                date: r.recorded_date,
-                type: 'baby-stats',
-                typeLabel: 'Baby Measurement',
-                title: 'Baby Measurement',
-                subtitle: details.join(' • ') || r.notes || 'Growth measurement',
-                icon: '👶',
-                color: 'var(--color-cat-baby)',
-                pregnancyWeek: calcWeek(r.recorded_date),
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch Appointments
-        try {
-          const res = await fetch('/api/sheets/Appointments');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.appointment_date,
-                type: 'appointment',
-                typeLabel: 'Appointment',
-                title: r.purpose || 'Appointment',
-                subtitle: [
-                  r.appointment_time,
-                  r.doctor_name ? `Dr. ${r.doctor_name}` : null,
-                  r.hospital,
-                  r.status,
-                ]
-                  .filter(Boolean)
-                  .join(' • '),
-                icon: '📅',
-                color: 'var(--color-cat-appointment)',
-                pregnancyWeek: calcWeek(r.appointment_date),
-                cost: r.cost,
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch Milestones
-        try {
-          const res = await fetch('/api/sheets/Milestones');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.milestone_date,
-                type: 'milestone',
-                typeLabel: 'Milestone',
-                title: r.milestone_type || 'Milestone',
-                subtitle: r.description || r.notes || 'Special moment reached',
-                icon: '🏆',
-                color: 'var(--color-cat-milestone)',
-                pregnancyWeek: calcWeek(r.milestone_date),
-              });
-            }
-          }
-        } catch {}
-
-        // Fetch Notes
-        try {
-          const res = await fetch('/api/sheets/Notes');
-          const resData = await res.json();
-          if (resData.data) {
-            for (const r of resData.data) {
-              timelineList.push({
-                id: r.id,
-                date: r.note_date,
-                type: 'note',
-                typeLabel: `${r.category || 'General'} Note`,
-                title: r.title || `${r.category || 'General'} Note`,
-                subtitle: r.content || '',
-                icon: '📝',
-                color: 'var(--color-cat-note)',
-                pregnancyWeek: calcWeek(r.note_date),
-              });
-            }
-          }
-        } catch {}
-
-        // Sort descending by date
-        timelineList.sort((a, b) => {
-          const dateA = a.date ? new Date(a.date).getTime() : 0;
-          const dateB = b.date ? new Date(b.date).getTime() : 0;
-          return dateB - dateA;
+    // Doctor Visits
+    if (doctorVisitsRows) {
+      for (const r of doctorVisitsRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.visit_date,
+          type: 'doctor-visit',
+          typeLabel: 'Doctor Visit',
+          title: r.doctor_name ? `Dr. ${r.doctor_name}` : 'Doctor Visit',
+          subtitle: [r.hospital, r.reason, r.symptoms_discussed]
+            .filter(Boolean)
+            .join(' • '),
+          icon: '🩺',
+          color: 'var(--color-cat-doctor)',
+          pregnancyWeek: calcWeek(r.visit_date),
+          cost: r.cost,
         });
-
-        setItems(timelineList);
-      } catch (err) {
-        console.error('Error fetching timeline data:', err);
-      } finally {
-        setLoading(false);
       }
     }
 
-    loadTimelineData();
-  }, [session]);
+    // Medicines
+    if (medicinesRows) {
+      for (const r of medicinesRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.start_date,
+          type: 'medicine',
+          typeLabel: 'Medicine',
+          title: r.medicine_name || 'Prescription',
+          subtitle: [
+            r.dosage,
+            r.frequency,
+            r.is_active === 'FALSE' ? 'Stopped' : 'Active',
+          ]
+            .filter(Boolean)
+            .join(' • '),
+          icon: '💊',
+          color: 'var(--color-cat-medicine)',
+          pregnancyWeek: calcWeek(r.start_date),
+          cost: r.cost,
+        });
+      }
+    }
+
+    // Tests
+    if (testsRows) {
+      for (const r of testsRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.test_date,
+          type: 'test',
+          typeLabel: 'Test & Lab',
+          title: r.test_name || 'Lab Test',
+          subtitle: [r.status, r.result_summary, r.reason]
+            .filter(Boolean)
+            .join(' • '),
+          icon: '🧪',
+          color: 'var(--color-cat-test)',
+          driveLink: r.report_link,
+          pregnancyWeek: calcWeek(r.test_date),
+          cost: r.cost,
+        });
+      }
+    }
+
+    // Health Stats
+    if (healthStatsRows) {
+      for (const r of healthStatsRows) {
+        const details = [];
+        if (r.bp_systolic && r.bp_diastolic)
+          details.push(`BP ${r.bp_systolic}/${r.bp_diastolic}`);
+        if (r.weight_kg) details.push(`${r.weight_kg} kg`);
+        if (r.blood_sugar) details.push(`Sugar ${r.blood_sugar} mg/dL`);
+        if (r.temperature) details.push(`Temp ${r.temperature} °C`);
+        if (r.hemoglobin) details.push(`Hb ${r.hemoglobin} g/dL`);
+
+        timelineList.push({
+          id: r.id,
+          date: r.recorded_date,
+          type: 'health-stats',
+          typeLabel: 'Health Measurement',
+          title: 'Health Measurement',
+          subtitle: details.join(' • ') || r.notes || 'Recorded vitals',
+          icon: '❤️',
+          color: 'var(--color-cat-health)',
+          pregnancyWeek: calcWeek(r.recorded_date),
+        });
+      }
+    }
+
+    // Baby Stats
+    if (babyStatsRows) {
+      for (const r of babyStatsRows) {
+        const details = [];
+        if (r.fhr_bpm) details.push(`FHR ${r.fhr_bpm} bpm`);
+        if (r.baby_weight_grams) details.push(`${r.baby_weight_grams} g`);
+        if (r.movement_felt === 'TRUE') details.push('Movement felt');
+        if (r.movement_count) details.push(`${r.movement_count} kicks`);
+
+        timelineList.push({
+          id: r.id,
+          date: r.recorded_date,
+          type: 'baby-stats',
+          typeLabel: 'Baby Measurement',
+          title: 'Baby Measurement',
+          subtitle: details.join(' • ') || r.notes || 'Growth measurement',
+          icon: '👶',
+          color: 'var(--color-cat-baby)',
+          pregnancyWeek: calcWeek(r.recorded_date),
+        });
+      }
+    }
+
+    // Appointments
+    if (appointmentsRows) {
+      for (const r of appointmentsRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.appointment_date,
+          type: 'appointment',
+          typeLabel: 'Appointment',
+          title: r.purpose || 'Appointment',
+          subtitle: [
+            r.appointment_time,
+            r.doctor_name ? `Dr. ${r.doctor_name}` : null,
+            r.hospital,
+            r.status,
+          ]
+            .filter(Boolean)
+            .join(' • '),
+          icon: '📅',
+          color: 'var(--color-cat-appointment)',
+          pregnancyWeek: calcWeek(r.appointment_date),
+          cost: r.cost,
+        });
+      }
+    }
+
+    // Milestones
+    if (milestonesRows) {
+      for (const r of milestonesRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.milestone_date,
+          type: 'milestone',
+          typeLabel: 'Milestone',
+          title: r.milestone_type || 'Milestone',
+          subtitle: r.description || r.notes || 'Special moment reached',
+          icon: '🏆',
+          color: 'var(--color-cat-milestone)',
+          pregnancyWeek: calcWeek(r.milestone_date),
+        });
+      }
+    }
+
+    // Notes
+    if (notesRows) {
+      for (const r of notesRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.note_date,
+          type: 'note',
+          typeLabel: `${r.category || 'General'} Note`,
+          title: r.title || `${r.category || 'General'} Note`,
+          subtitle: r.content || '',
+          icon: '📝',
+          color: 'var(--color-cat-note)',
+          pregnancyWeek: calcWeek(r.note_date),
+        });
+      }
+    }
+
+    timelineList.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    return timelineList;
+  }, [
+    userLmp,
+    doctorVisitsRows,
+    medicinesRows,
+    testsRows,
+    healthStatsRows,
+    babyStatsRows,
+    appointmentsRows,
+    milestonesRows,
+    notesRows,
+  ]);
+
+  const loading = (status === 'loading') || (pregLoading && !pregRows && visitsLoading && !doctorVisitsRows);
 
   // Filtered and searched items
   const filteredItems = useMemo(() => {

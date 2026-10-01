@@ -9,9 +9,10 @@ import { authOptions } from '@/lib/auth';
 import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
 import { getDemoSheetRows } from '@/lib/demo-data';
+import { ServerCache } from '@/lib/cache';
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ tab: string }> }
 ) {
   try {
@@ -29,7 +30,7 @@ export async function GET(
     // Serve prefilled demo data in demo mode
     if (session.isDemo) {
       const rows = getDemoSheetRows(tab);
-      return NextResponse.json({ data: rows });
+      return NextResponse.json({ data: rows, cached: true });
     }
 
     const spreadsheetId = await resolveSpreadsheetId(
@@ -45,10 +46,23 @@ export async function GET(
       );
     }
 
+    const isForceRefresh = req.nextUrl.searchParams.get('refresh') === 'true';
+
+    // Check server in-memory cache unless caller explicitly requested fresh data
+    if (!isForceRefresh) {
+      const cached = ServerCache.get<Record<string, string>[]>(spreadsheetId, tab);
+      if (cached) {
+        return NextResponse.json({ data: cached, cached: true });
+      }
+    }
+
     const service = new SheetsService(session.accessToken, spreadsheetId);
     const rows = await service.getRows(tab);
 
-    return NextResponse.json({ data: rows });
+    // Cache the retrieved rows for 1 hour
+    ServerCache.set(spreadsheetId, tab, rows);
+
+    return NextResponse.json({ data: rows, cached: false });
   } catch (error) {
     console.error('Error reading sheet:', error);
     return NextResponse.json(
@@ -99,6 +113,9 @@ export async function POST(
 
     const service = new SheetsService(session.accessToken, spreadsheetId);
     await service.appendRow(tab, body);
+
+    // Invalidate cached rows for this tab so subsequent reads fetch fresh data
+    ServerCache.invalidate(spreadsheetId, tab);
 
     return NextResponse.json({ success: true });
   } catch (error) {

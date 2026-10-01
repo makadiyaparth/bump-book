@@ -12,9 +12,11 @@ import {
   Check,
   ShieldCheck,
   Heart,
+  RefreshCw,
 } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
 import JourneyLoader from '@/components/JourneyLoader';
+import { invalidateSheetTab, syncAllSheets } from '@/lib/useSheetData';
 import styles from './page.module.css';
 import formStyles from '@/styles/forms.module.css';
 
@@ -37,6 +39,7 @@ export default function SettingsPage() {
   const [driveFolderId, setDriveFolderId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -100,6 +103,22 @@ export default function SettingsPage() {
     });
   };
 
+  const handleManualSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      const ok = await syncAllSheets();
+      if (ok) {
+        setToastMessage('Successfully synchronized with your Google Sheet!');
+      } else {
+        setToastMessage('Sync failed. Please check your connection.');
+      }
+    } finally {
+      setSyncing(false);
+      setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
+
   const handleSaveProfile = async () => {
     if (saving || !profileId) return;
 
@@ -122,6 +141,9 @@ export default function SettingsPage() {
       });
 
       if (!res.ok) throw new Error('Failed to update pregnancy profile');
+
+      // Invalidate Pregnancy cache so Dashboard and Timeline show fresh data
+      invalidateSheetTab('Pregnancy');
 
       setToastMessage('Pregnancy profile updated successfully');
       setTimeout(() => setToastMessage(null), 3000);
@@ -433,6 +455,38 @@ export default function SettingsPage() {
                 >
                   <ExternalLink size={14} /> Open Drive
                 </a>
+              </div>
+
+              <div className={styles.linkRow}>
+                <div className={styles.linkInfo}>
+                  <div className={styles.linkIcon}>🔄</div>
+                  <div>
+                    <div className={styles.linkTitle}>Sync with Google Sheets</div>
+                    <div className={styles.linkDesc}>
+                      Fetch any rows updated or added directly in your Google Spreadsheet
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleManualSync}
+                  disabled={syncing}
+                  className={styles.openLinkBtn}
+                  style={{
+                    cursor: syncing ? 'wait' : 'pointer',
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                  }}
+                >
+                  <RefreshCw
+                    size={14}
+                    style={{
+                      animation: syncing ? 'spin 1s linear infinite' : 'none',
+                    }}
+                  />
+                  {syncing ? 'Syncing...' : 'Sync Now'}
+                </button>
               </div>
             </>
           )}

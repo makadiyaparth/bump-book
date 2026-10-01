@@ -9,6 +9,7 @@ import { authOptions } from '@/lib/auth';
 import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
 import { getDemoSheetRowById } from '@/lib/demo-data';
+import { ServerCache } from '@/lib/cache';
 
 export async function GET(
   _req: NextRequest,
@@ -107,6 +108,9 @@ export async function PUT(
 
     await service.updateRow(tab, found.rowIndex, { ...found.data, ...body });
 
+    // Invalidate cached rows for this tab so subsequent reads fetch fresh data
+    ServerCache.invalidate(spreadsheetId, tab);
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating row:', error);
@@ -162,6 +166,9 @@ export async function DELETE(
     }
 
     await service.deleteRow(tab, found.rowIndex);
+
+    // Invalidate cached rows for this tab so subsequent reads fetch fresh data
+    ServerCache.invalidate(spreadsheetId, tab);
 
     return NextResponse.json({ success: true });
   } catch (error) {

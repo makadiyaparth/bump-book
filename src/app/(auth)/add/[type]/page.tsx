@@ -8,6 +8,7 @@ import { ArrowLeft, Check, UploadCloud, Paperclip, X } from 'lucide-react';
 import { generateId, now, today } from '@/lib/utils';
 import { RECORD_TYPES, MILESTONE_TYPES } from '@/lib/types';
 import type { RecordType } from '@/lib/types';
+import { invalidateSheetTab } from '@/lib/useSheetData';
 import formStyles from '@/styles/forms.module.css';
 
 export default function AddRecordFormPage({
@@ -104,6 +105,9 @@ export default function AddRecordFormPage({
       });
 
       if (!res.ok) throw new Error('Failed to save');
+
+      // Invalidate SWR client cache so screens immediately show the new record
+      invalidateSheetTab(recordType.sheetTab);
 
       setShowToast(true);
       setTimeout(() => {

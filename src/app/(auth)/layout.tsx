@@ -4,7 +4,7 @@ import { useSession, signOut, signIn } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   LayoutDashboard,
   Clock,
@@ -12,8 +12,10 @@ import {
   Plus,
   Settings,
   LogOut,
+  RefreshCw,
 } from 'lucide-react';
 import JourneyLoader from '@/components/JourneyLoader';
+import { syncAllSheets, clearClientSheetCache } from '@/lib/useSheetData';
 import styles from './layout.module.css';
 
 const NAV_ITEMS = [
@@ -31,6 +33,22 @@ export default function AuthLayout({
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    if (syncing) return;
+    setSyncing(true);
+    try {
+      await syncAllSheets();
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const handleSignOut = () => {
+    clearClientSheetCache();
+    signOut({ callbackUrl: '/' });
+  };
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -135,8 +153,22 @@ export default function AuthLayout({
             <p className={styles.userEmail}>{session.user?.email}</p>
           </div>
           <button
+            className={styles.syncButton}
+            onClick={handleSync}
+            disabled={syncing}
+            title={syncing ? 'Syncing with Google Sheets...' : 'Sync with Google Sheets'}
+            aria-label="Sync with Google Sheets"
+          >
+            <RefreshCw
+              size={16}
+              style={{
+                animation: syncing ? 'spin 1s linear infinite' : 'none',
+              }}
+            />
+          </button>
+          <button
             className={styles.signOutButton}
-            onClick={() => signOut({ callbackUrl: '/' })}
+            onClick={handleSignOut}
             title={session.isDemo ? 'Exit Demo' : 'Sign out'}
           >
             <LogOut size={16} />
@@ -159,16 +191,32 @@ export default function AuthLayout({
             <span className={styles.demoBadgePill}>Demo</span>
           )}
         </Link>
-        {session.user?.image && (
-          <Link href="/settings">
-            <img
-              src={session.user.image}
-              alt=""
-              className={styles.mobileAvatar}
-              referrerPolicy="no-referrer"
+        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+          <button
+            className={styles.syncButton}
+            onClick={handleSync}
+            disabled={syncing}
+            title={syncing ? 'Syncing...' : 'Sync with Google Sheets'}
+            aria-label="Sync with Google Sheets"
+          >
+            <RefreshCw
+              size={18}
+              style={{
+                animation: syncing ? 'spin 1s linear infinite' : 'none',
+              }}
             />
-          </Link>
-        )}
+          </button>
+          {session.user?.image && (
+            <Link href="/settings">
+              <img
+                src={session.user.image}
+                alt=""
+                className={styles.mobileAvatar}
+                referrerPolicy="no-referrer"
+              />
+            </Link>
+          )}
+        </div>
       </header>
 
       {/* Main content */}

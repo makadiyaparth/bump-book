@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { use, useState, useEffect, useMemo } from 'react';
+import { use, useState, useMemo } from 'react';
 import {
   ArrowLeft,
   Plus,
@@ -12,6 +12,7 @@ import {
 import { RECORD_TYPES } from '@/lib/types';
 import { formatDateShort, formatCurrency } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
+import { useSheetData } from '@/lib/useSheetData';
 import styles from '../records.module.css';
 
 export default function RecordTypeListPage({
@@ -20,37 +21,21 @@ export default function RecordTypeListPage({
   params: Promise<{ type: string }>;
 }) {
   const { type } = use(params);
-  const { data: session } = useSession();
-  const [records, setRecords] = useState<Record<string, string>[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { status } = useSession();
   const [searchQuery, setSearchQuery] = useState('');
 
   const recordType = RECORD_TYPES.find((r) => r.key === type);
 
-  useEffect(() => {
-    async function loadData() {
-      if (!session?.accessToken || !recordType) {
-        setLoading(false);
-        return;
-      }
+  const { data: rawRows, isLoading: dataLoading } = useSheetData(
+    recordType ? recordType.sheetTab : null
+  );
 
-      try {
-        const res = await fetch(`/api/sheets/${recordType.sheetTab}`);
-        const data = await res.json();
-        if (data.data) {
-          // Sort descending by date or created_at
-          const sorted = [...data.data].reverse();
-          setRecords(sorted);
-        }
-      } catch (err) {
-        console.error('Error fetching records:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const records = useMemo(() => {
+    if (!rawRows) return [];
+    return [...rawRows].reverse();
+  }, [rawRows]);
 
-    loadData();
-  }, [session, recordType]);
+  const loading = (status === 'loading') || (dataLoading && !rawRows);
 
   const filteredRecords = useMemo(() => {
     if (!searchQuery.trim()) return records;

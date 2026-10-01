@@ -163,6 +163,24 @@
   color: var(--color-danger);
 }
 
+.syncButton {
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.syncButton:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+}
+
 /* ─── Main content ─── */
 .mainContent {
   flex: 1;

@@ -3,14 +3,14 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import { getPregnancyInfo, formatPregnancyWeek, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
+import { getPregnancyInfo, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
 import { formatDate, formatDateShort, formatRelativeDate, getGreeting } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
+import { useSheetData } from '@/lib/useSheetData';
 import type {
   PregnancyProfile,
-  PregnancyInfo,
   HealthStats,
   BabyStats,
   Appointment,
@@ -20,198 +20,156 @@ import type {
 import styles from './page.module.css';
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
-  const [pregnancy, setPregnancy] = useState<PregnancyProfile | null>(null);
-  const [pregnancyInfo, setPregnancyInfo] = useState<PregnancyInfo | null>(null);
-  const [latestHealth, setLatestHealth] = useState<HealthStats | null>(null);
-  const [latestBaby, setLatestBaby] = useState<BabyStats | null>(null);
-  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
-  const [activeMedicines, setActiveMedicines] = useState<Medicine[]>([]);
-  const [recentTimeline, setRecentTimeline] = useState<TimelineEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: session, status } = useSession();
 
-  useEffect(() => {
-    async function fetchData() {
-      if (!session?.accessToken) {
-        setLoading(false);
-        return;
-      }
+  const { data: pregRows, isLoading: pregLoading } = useSheetData('Pregnancy');
+  const { data: healthRows } = useSheetData('HealthStats');
+  const { data: babyRows } = useSheetData('BabyStats');
+  const { data: apptRows } = useSheetData('Appointments');
+  const { data: medRows } = useSheetData('Medicines');
+  const { data: visitRows } = useSheetData('DoctorVisits');
 
-    try {
-      // Fetch pregnancy profile
-      const pregRes = await fetch('/api/sheets/Pregnancy');
-      const pregData = await pregRes.json();
-
-      if (pregData.data && pregData.data.length > 0) {
-        const row = pregData.data[0];
-        const profile: PregnancyProfile = {
-          id: row.id,
-          lmpDate: row.lmp_date,
-          dueDate: row.due_date,
-          bloodGroup: row.blood_group,
-          rhFactor: row.rh_factor,
-          pregnancyType: row.pregnancy_type as PregnancyProfile['pregnancyType'],
-          previousPregnancies: Number(row.previous_pregnancies) || 0,
-          previousDeliveries: Number(row.previous_deliveries) || 0,
-          allergies: row.allergies,
-          medicalConditions: row.medical_conditions,
-          primaryDoctor: row.primary_doctor,
-          primaryHospital: row.primary_hospital,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-        };
-        setPregnancy(profile);
-        setPregnancyInfo(getPregnancyInfo(profile.lmpDate));
-      }
-
-      // Fetch latest health stats
-      const healthRes = await fetch('/api/sheets/HealthStats');
-      const healthData = await healthRes.json();
-      if (healthData.data && healthData.data.length > 0) {
-        const latest = healthData.data[healthData.data.length - 1];
-        setLatestHealth({
-          id: latest.id,
-          recordedDate: latest.recorded_date,
-          weightKg: latest.weight_kg ? Number(latest.weight_kg) : null,
-          bpSystolic: latest.bp_systolic ? Number(latest.bp_systolic) : null,
-          bpDiastolic: latest.bp_diastolic ? Number(latest.bp_diastolic) : null,
-          bloodSugar: latest.blood_sugar ? Number(latest.blood_sugar) : null,
-          temperature: latest.temperature ? Number(latest.temperature) : null,
-          hemoglobin: latest.hemoglobin ? Number(latest.hemoglobin) : null,
-          notes: latest.notes,
-          createdAt: latest.created_at,
-        });
-      }
-
-      // Fetch latest baby stats
-      const babyRes = await fetch('/api/sheets/BabyStats');
-      const babyData = await babyRes.json();
-      if (babyData.data && babyData.data.length > 0) {
-        const latest = babyData.data[babyData.data.length - 1];
-        setLatestBaby({
-          id: latest.id,
-          recordedDate: latest.recorded_date,
-          babyWeightGrams: latest.baby_weight_grams ? Number(latest.baby_weight_grams) : null,
-          fhrBpm: latest.fhr_bpm ? Number(latest.fhr_bpm) : null,
-          bpdMm: latest.bpd_mm ? Number(latest.bpd_mm) : null,
-          flMm: latest.fl_mm ? Number(latest.fl_mm) : null,
-          acMm: latest.ac_mm ? Number(latest.ac_mm) : null,
-          hcMm: latest.hc_mm ? Number(latest.hc_mm) : null,
-          movementFelt: latest.movement_felt === 'TRUE',
-          movementCount: latest.movement_count ? Number(latest.movement_count) : null,
-          notes: latest.notes,
-          createdAt: latest.created_at,
-        });
-      }
-
-      // Fetch upcoming appointments
-      const apptRes = await fetch('/api/sheets/Appointments');
-      const apptData = await apptRes.json();
-      if (apptData.data) {
-        const today = new Date().toISOString().split('T')[0];
-        const upcoming = apptData.data
-          .filter(
-            (a: Record<string, string>) =>
-              a.status === 'Upcoming' && a.appointment_date >= today
-          )
-          .sort(
-            (a: Record<string, string>, b: Record<string, string>) =>
-              a.appointment_date.localeCompare(b.appointment_date)
-          )
-          .slice(0, 3)
-          .map(
-            (a: Record<string, string>): Appointment => ({
-              id: a.id,
-              appointmentDate: a.appointment_date,
-              appointmentTime: a.appointment_time,
-              doctorName: a.doctor_name,
-              hospital: a.hospital,
-              purpose: a.purpose,
-              status: a.status as Appointment['status'],
-              notes: a.notes,
-              createdAt: a.created_at,
-            })
-          );
-        setUpcomingAppointments(upcoming);
-      }
-
-      // Fetch active medicines
-      const medRes = await fetch('/api/sheets/Medicines');
-      const medData = await medRes.json();
-      if (medData.data) {
-        const active = medData.data
-          .filter((m: Record<string, string>) => m.is_active === 'TRUE')
-          .map(
-            (m: Record<string, string>): Medicine => ({
-              id: m.id,
-              medicineName: m.medicine_name,
-              dosage: m.dosage,
-              frequency: m.frequency,
-              startDate: m.start_date,
-              endDate: m.end_date,
-              prescribedBy: m.prescribed_by,
-              reason: m.reason,
-              isActive: true,
-              notes: m.notes,
-              createdAt: m.created_at,
-            })
-          );
-        setActiveMedicines(active);
-      }
-
-      // Build recent timeline from multiple sources
-      const timelineEntries: TimelineEntry[] = [];
-
-      // Doctor visits
-      const visitRes = await fetch('/api/sheets/DoctorVisits');
-      const visitData = await visitRes.json();
-      if (visitData.data) {
-        visitData.data.forEach((v: Record<string, string>) => {
-          timelineEntries.push({
-            id: v.id,
-            date: v.visit_date,
-            type: 'doctor-visit',
-            title: `Doctor Visit — ${v.doctor_name || 'Doctor'}`,
-            subtitle: v.reason || v.doctor_observations || '',
-            icon: '🩺',
-            color: 'var(--color-cat-doctor)',
-            data: v,
-          });
-        });
-      }
-
-      // Add health stats to timeline
-      if (healthData.data) {
-        healthData.data.forEach((h: Record<string, string>) => {
-          const parts: string[] = [];
-          if (h.bp_systolic && h.bp_diastolic) parts.push(`BP ${h.bp_systolic}/${h.bp_diastolic}`);
-          if (h.weight_kg) parts.push(`Weight ${h.weight_kg} kg`);
-          if (h.temperature) parts.push(`Temp ${h.temperature} °C`);
-          timelineEntries.push({
-            id: h.id,
-            date: h.recorded_date,
-            type: 'health-stats',
-            title: 'Health Measurement',
-            subtitle: parts.join(' • ') || 'Recorded',
-            icon: '❤️',
-            color: 'var(--color-cat-health)',
-            data: h,
-          });
-        });
-      }
-
-      // Sort and take latest 5
-      timelineEntries.sort((a, b) => b.date.localeCompare(a.date));
-      setRecentTimeline(timelineEntries.slice(0, 5));
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    } finally {
-      setLoading(false);
+  const { pregnancy, pregnancyInfo } = useMemo(() => {
+    if (!pregRows || pregRows.length === 0) {
+      return { pregnancy: null, pregnancyInfo: null };
     }
-  }
+    const row = pregRows[0];
+    const profile: PregnancyProfile = {
+      id: row.id,
+      lmpDate: row.lmp_date,
+      dueDate: row.due_date,
+      bloodGroup: row.blood_group,
+      rhFactor: row.rh_factor,
+      pregnancyType: row.pregnancy_type as PregnancyProfile['pregnancyType'],
+      previousPregnancies: Number(row.previous_pregnancies) || 0,
+      previousDeliveries: Number(row.previous_deliveries) || 0,
+      allergies: row.allergies,
+      medicalConditions: row.medical_conditions,
+      primaryDoctor: row.primary_doctor,
+      primaryHospital: row.primary_hospital,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+    return {
+      pregnancy: profile,
+      pregnancyInfo: getPregnancyInfo(profile.lmpDate),
+    };
+  }, [pregRows]);
 
-  fetchData();
-}, [session?.accessToken, session?.spreadsheetId]);
+  const latestHealth = useMemo<HealthStats | null>(() => {
+    if (!healthRows || healthRows.length === 0) return null;
+    const latest = healthRows[healthRows.length - 1];
+    return {
+      id: latest.id,
+      recordedDate: latest.recorded_date,
+      weightKg: latest.weight_kg ? Number(latest.weight_kg) : null,
+      bpSystolic: latest.bp_systolic ? Number(latest.bp_systolic) : null,
+      bpDiastolic: latest.bp_diastolic ? Number(latest.bp_diastolic) : null,
+      bloodSugar: latest.blood_sugar ? Number(latest.blood_sugar) : null,
+      temperature: latest.temperature ? Number(latest.temperature) : null,
+      hemoglobin: latest.hemoglobin ? Number(latest.hemoglobin) : null,
+      notes: latest.notes,
+      createdAt: latest.created_at,
+    };
+  }, [healthRows]);
+
+  const latestBaby = useMemo<BabyStats | null>(() => {
+    if (!babyRows || babyRows.length === 0) return null;
+    const latest = babyRows[babyRows.length - 1];
+    return {
+      id: latest.id,
+      recordedDate: latest.recorded_date,
+      babyWeightGrams: latest.baby_weight_grams ? Number(latest.baby_weight_grams) : null,
+      fhrBpm: latest.fhr_bpm ? Number(latest.fhr_bpm) : null,
+      bpdMm: latest.bpd_mm ? Number(latest.bpd_mm) : null,
+      flMm: latest.fl_mm ? Number(latest.fl_mm) : null,
+      acMm: latest.ac_mm ? Number(latest.ac_mm) : null,
+      hcMm: latest.hc_mm ? Number(latest.hc_mm) : null,
+      movementFelt: latest.movement_felt === 'TRUE',
+      movementCount: latest.movement_count ? Number(latest.movement_count) : null,
+      notes: latest.notes,
+      createdAt: latest.created_at,
+    };
+  }, [babyRows]);
+
+  const upcomingAppointments = useMemo<Appointment[]>(() => {
+    if (!apptRows) return [];
+    const today = new Date().toISOString().split('T')[0];
+    return apptRows
+      .filter((a) => a.status === 'Upcoming' && a.appointment_date >= today)
+      .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date))
+      .slice(0, 3)
+      .map((a): Appointment => ({
+        id: a.id,
+        appointmentDate: a.appointment_date,
+        appointmentTime: a.appointment_time,
+        doctorName: a.doctor_name,
+        hospital: a.hospital,
+        purpose: a.purpose,
+        status: a.status as Appointment['status'],
+        notes: a.notes,
+        createdAt: a.created_at,
+      }));
+  }, [apptRows]);
+
+  const activeMedicines = useMemo<Medicine[]>(() => {
+    if (!medRows) return [];
+    return medRows
+      .filter((m) => m.is_active === 'TRUE')
+      .map((m): Medicine => ({
+        id: m.id,
+        medicineName: m.medicine_name,
+        dosage: m.dosage,
+        frequency: m.frequency,
+        startDate: m.start_date,
+        endDate: m.end_date,
+        prescribedBy: m.prescribed_by,
+        reason: m.reason,
+        isActive: true,
+        notes: m.notes,
+        createdAt: m.created_at,
+      }));
+  }, [medRows]);
+
+  const recentTimeline = useMemo<TimelineEntry[]>(() => {
+    const entries: TimelineEntry[] = [];
+    if (visitRows) {
+      visitRows.forEach((v) => {
+        entries.push({
+          id: v.id,
+          date: v.visit_date,
+          type: 'doctor-visit',
+          title: `Doctor Visit — ${v.doctor_name || 'Doctor'}`,
+          subtitle: v.reason || v.doctor_observations || '',
+          icon: '🩺',
+          color: 'var(--color-cat-doctor)',
+          data: v,
+        });
+      });
+    }
+    if (healthRows) {
+      healthRows.forEach((h) => {
+        const parts: string[] = [];
+        if (h.bp_systolic && h.bp_diastolic) parts.push(`BP ${h.bp_systolic}/${h.bp_diastolic}`);
+        if (h.weight_kg) parts.push(`Weight ${h.weight_kg} kg`);
+        if (h.temperature) parts.push(`Temp ${h.temperature} °C`);
+        entries.push({
+          id: h.id,
+          date: h.recorded_date,
+          type: 'health-stats',
+          title: 'Health Measurement',
+          subtitle: parts.join(' • ') || 'Recorded',
+          icon: '❤️',
+          color: 'var(--color-cat-health)',
+          data: h,
+        });
+      });
+    }
+    entries.sort((a, b) => b.date.localeCompare(a.date));
+    return entries.slice(0, 5);
+  }, [visitRows, healthRows]);
+
+  const loading = (status === 'loading') || (pregLoading && !pregRows);
 
   const greeting = getGreeting();
   const firstName = session?.user?.name?.split(' ')[0] || '';

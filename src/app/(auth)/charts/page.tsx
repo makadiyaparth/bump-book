@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +18,7 @@ import { Line } from 'react-chartjs-2';
 import { TrendingUp, Heart, Activity, Baby } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
+import { useSheetData } from '@/lib/useSheetData';
 import styles from './page.module.css';
 
 ChartJS.register(
@@ -50,80 +51,46 @@ interface BabyRecord {
 }
 
 export default function ChartsPage() {
-  const { data: session } = useSession();
-  const [healthData, setHealthData] = useState<HealthRecord[]>([]);
-  const [babyData, setBabyData] = useState<BabyRecord[]>([]);
-  const [lmpDate, setLmpDate] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { status } = useSession();
   const [timeRange, setTimeRange] = useState<'all' | 't1' | 't2' | 't3'>('all');
 
-  useEffect(() => {
-    async function loadData() {
-      if (!session?.accessToken) {
-        setLoading(false);
-        return;
-      }
+  const { data: pregRows } = useSheetData('Pregnancy');
+  const { data: healthRows, isLoading: healthLoading } = useSheetData('HealthStats');
+  const { data: babyRows, isLoading: babyLoading } = useSheetData('BabyStats');
 
-      try {
-        // Fetch LMP for trimester calculations
-        try {
-          const pregRes = await fetch('/api/sheets/Pregnancy');
-          const pregJson = await pregRes.json();
-          if (pregJson.data?.[0]?.lmp_date) {
-            setLmpDate(pregJson.data[0].lmp_date);
-          }
-        } catch {}
+  const lmpDate = useMemo(() => {
+    return pregRows?.[0]?.lmp_date || null;
+  }, [pregRows]);
 
-        // Fetch HealthStats
-        const healthRes = await fetch('/api/sheets/HealthStats');
-        const healthJson = await healthRes.json();
-        if (healthJson.data) {
-          const parsed: HealthRecord[] = healthJson.data
-            .map((r: Record<string, string>) => ({
-              id: r.id,
-              date: r.recorded_date,
-              weight: r.weight_kg ? parseFloat(r.weight_kg) : null,
-              bpSystolic: r.bp_systolic ? parseFloat(r.bp_systolic) : null,
-              bpDiastolic: r.bp_diastolic ? parseFloat(r.bp_diastolic) : null,
-              bloodSugar: r.blood_sugar ? parseFloat(r.blood_sugar) : null,
-            }))
-            .sort(
-              (a: HealthRecord, b: HealthRecord) =>
-                new Date(a.date).getTime() - new Date(b.date).getTime()
-            );
-          setHealthData(parsed);
-        }
+  const healthData = useMemo<HealthRecord[]>(() => {
+    if (!healthRows) return [];
+    return healthRows
+      .map((r) => ({
+        id: r.id,
+        date: r.recorded_date,
+        weight: r.weight_kg ? parseFloat(r.weight_kg) : null,
+        bpSystolic: r.bp_systolic ? parseFloat(r.bp_systolic) : null,
+        bpDiastolic: r.bp_diastolic ? parseFloat(r.bp_diastolic) : null,
+        bloodSugar: r.blood_sugar ? parseFloat(r.blood_sugar) : null,
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [healthRows]);
 
-        // Fetch BabyStats
-        const babyRes = await fetch('/api/sheets/BabyStats');
-        const babyJson = await babyRes.json();
-        if (babyJson.data) {
-          const parsedBaby: BabyRecord[] = babyJson.data
-            .map((r: Record<string, string>) => ({
-              id: r.id,
-              date: r.recorded_date,
-              fhr: r.fhr_bpm ? parseFloat(r.fhr_bpm) : null,
-              weight: r.baby_weight_grams
-                ? parseFloat(r.baby_weight_grams)
-                : null,
-              bpd: r.bpd_mm ? parseFloat(r.bpd_mm) : null,
-              fl: r.fl_mm ? parseFloat(r.fl_mm) : null,
-            }))
-            .sort(
-              (a: BabyRecord, b: BabyRecord) =>
-                new Date(a.date).getTime() - new Date(b.date).getTime()
-            );
-          setBabyData(parsedBaby);
-        }
-      } catch (err) {
-        console.error('Error fetching chart data:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const babyData = useMemo<BabyRecord[]>(() => {
+    if (!babyRows) return [];
+    return babyRows
+      .map((r) => ({
+        id: r.id,
+        date: r.recorded_date,
+        fhr: r.fhr_bpm ? parseFloat(r.fhr_bpm) : null,
+        weight: r.baby_weight_grams ? parseFloat(r.baby_weight_grams) : null,
+        bpd: r.bpd_mm ? parseFloat(r.bpd_mm) : null,
+        fl: r.fl_mm ? parseFloat(r.fl_mm) : null,
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [babyRows]);
 
-    loadData();
-  }, [session]);
+  const loading = (status === 'loading') || (healthLoading && !healthRows && babyLoading && !babyRows);
 
   // Filter records by trimester
   const filterByTrimester = useCallback(
