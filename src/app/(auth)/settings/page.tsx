@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -102,6 +102,13 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     if (saving || !profileId) return;
+
+    if (session?.isDemo) {
+      setToastMessage('Demo mode is read-only. Sign in with Google to edit your profile.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -326,9 +333,14 @@ export default function SettingsPage() {
                 className={styles.saveBtn}
                 onClick={handleSaveProfile}
                 disabled={saving}
+                title={session?.isDemo ? 'Read-only in Demo Mode' : 'Save Profile Changes'}
               >
                 <Check size={16} />
-                {saving ? 'Saving changes...' : 'Save Profile Changes'}
+                {saving
+                  ? 'Saving changes...'
+                  : session?.isDemo
+                  ? 'Save Profile (Read-Only Demo)'
+                  : 'Save Profile Changes'}
               </button>
             </div>
           )}
@@ -343,51 +355,87 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <div className={styles.linkRow}>
-            <div className={styles.linkInfo}>
-              <div className={styles.linkIcon}>📊</div>
-              <div>
-                <div className={styles.linkTitle}>Google Spreadsheet</div>
-                <div className={styles.linkDesc}>
-                  All visits, medicines, and vitals are saved in your personal Sheet
-                </div>
+          {session?.isDemo ? (
+            <div style={{
+              padding: 'var(--space-4)',
+              background: 'linear-gradient(135deg, hsl(348 85% 97%), hsl(280 70% 97%))',
+              borderRadius: 'var(--radius-lg)',
+              border: '1.5px solid hsl(348 70% 88%)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 'var(--space-3)',
+            }}>
+              <p style={{ fontSize: 'var(--font-size-sm)', color: 'hsl(348 60% 28%)', margin: 0, lineHeight: 'var(--line-height-relaxed)' }}>
+                🌟 <strong>Demo Mode Active (No Google Connection Required)</strong>: You are viewing pre-filled sample Indian pregnancy records. When you sign in with your real Google account, Bump Book automatically connects directly to your private Google Sheet and Google Drive. No health records are ever stored on external servers.
+              </p>
+              <div style={{ display: 'flex', gap: 'var(--space-3)', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => signIn('google')}
+                  className={styles.saveBtn}
+                  style={{ alignSelf: 'flex-start' }}
+                >
+                  Connect Your Google Account
+                </button>
+                <button
+                  type="button"
+                  onClick={() => signOut({ callbackUrl: '/' })}
+                  className={styles.signOutBtn}
+                  style={{ alignSelf: 'flex-start', background: 'white' }}
+                >
+                  Exit Demo
+                </button>
               </div>
             </div>
-
-            {spreadsheetUrl ? (
-              <a
-                href={spreadsheetUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.openLinkBtn}
-              >
-                <ExternalLink size={14} /> Open Sheet
-              </a>
-            ) : (
-              <span className={styles.linkDesc}>Not initialized</span>
-            )}
-          </div>
-
-          <div className={styles.linkRow}>
-            <div className={styles.linkInfo}>
-              <div className={styles.linkIcon}>📁</div>
-              <div>
-                <div className={styles.linkTitle}>Google Drive Folder</div>
-                <div className={styles.linkDesc}>
-                  Ultrasounds, lab test PDFs, and prescriptions folder
+          ) : (
+            <>
+              <div className={styles.linkRow}>
+                <div className={styles.linkInfo}>
+                  <div className={styles.linkIcon}>📊</div>
+                  <div>
+                    <div className={styles.linkTitle}>Google Spreadsheet</div>
+                    <div className={styles.linkDesc}>
+                      All visits, medicines, and vitals are saved in your personal Sheet
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <a
-              href={driveFolderUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.openLinkBtn}
-            >
-              <ExternalLink size={14} /> Open Drive
-            </a>
-          </div>
+                {spreadsheetUrl ? (
+                  <a
+                    href={spreadsheetUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.openLinkBtn}
+                  >
+                    <ExternalLink size={14} /> Open Sheet
+                  </a>
+                ) : (
+                  <span className={styles.linkDesc}>Not initialized</span>
+                )}
+              </div>
+
+              <div className={styles.linkRow}>
+                <div className={styles.linkInfo}>
+                  <div className={styles.linkIcon}>📁</div>
+                  <div>
+                    <div className={styles.linkTitle}>Google Drive Folder</div>
+                    <div className={styles.linkDesc}>
+                      Ultrasounds, lab test PDFs, and prescriptions folder
+                    </div>
+                  </div>
+                </div>
+
+                <a
+                  href={driveFolderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.openLinkBtn}
+                >
+                  <ExternalLink size={14} /> Open Drive
+                </a>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Section 4: About Bump Book & Privacy */}

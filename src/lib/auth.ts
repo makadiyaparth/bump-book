@@ -5,6 +5,7 @@
 
 import type { AuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 
 import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
  
@@ -15,6 +16,7 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
      refreshToken?: string;
      spreadsheetId?: string;
      error?: string;
+     isDemo?: boolean;
    }
  }
 
@@ -25,6 +27,7 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
      accessTokenExpires?: number;
      spreadsheetId?: string;
      error?: string;
+     isDemo?: boolean;
    }
  }
 
@@ -48,6 +51,19 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
          },
        },
      }),
+     CredentialsProvider({
+       id: 'demo',
+       name: 'Demo Mode',
+       credentials: {},
+       async authorize() {
+         return {
+           id: 'demo-guest-001',
+           name: 'Priya Sharma (Demo)',
+           email: 'priya.demo@bumpbook.app',
+           image: '/bump-book-icon.png',
+         };
+       },
+     }),
    ],
 
    session: {
@@ -57,6 +73,23 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
 
    callbacks: {
      async jwt({ token, account, trigger, session }) {
+       // Handle Demo Login
+       if (account?.provider === 'demo') {
+         token.isDemo = true;
+         token.accessToken = 'demo-access-token';
+         token.spreadsheetId = 'demo-sheet-id';
+         token.accessTokenExpires = Date.now() + 30 * 24 * 3600 * 1000;
+         token.name = 'Priya Sharma (Demo)';
+         token.email = 'priya.demo@bumpbook.app';
+         token.picture = '/bump-book-icon.png';
+         return token;
+       }
+
+       // If existing token is demo, bypass Google logic
+       if (token.isDemo) {
+         return token;
+       }
+
        // On initial sign-in, persist Google tokens
        if (account) {
          token.accessToken = account.access_token;
@@ -95,6 +128,19 @@ import { resolveSpreadsheetId, setCachedSpreadsheetId } from './sheets';
      },
 
      async session({ session, token }) {
+       session.isDemo = token.isDemo;
+
+       if (token.isDemo) {
+         session.accessToken = token.accessToken;
+         session.spreadsheetId = token.spreadsheetId;
+         if (session.user) {
+           session.user.name = token.name || 'Priya Sharma (Demo)';
+           session.user.email = token.email || 'priya.demo@bumpbook.app';
+           session.user.image = (token.picture as string) || '/bump-book-icon.png';
+         }
+         return session;
+       }
+
        session.accessToken = token.accessToken;
        session.refreshToken = token.refreshToken;
        session.spreadsheetId = token.spreadsheetId;

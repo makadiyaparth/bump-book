@@ -20,6 +20,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    if (session.isDemo) {
+      return NextResponse.json(
+        { error: 'File upload is disabled in demo mode. Sign in with Google to upload records.' },
+        { status: 403 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const folderType = (formData.get('folderType') as string) || 'Other';

@@ -1,6 +1,6 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession, signOut, signIn } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -126,13 +126,18 @@ export default function AuthLayout({
             />
           )}
           <div className={styles.userInfo}>
-            <p className={styles.userName}>{session.user?.name}</p>
+            <p className={styles.userName}>
+              {session.user?.name}
+              {session.isDemo && (
+                <span className={styles.demoBadgePill}>Demo</span>
+              )}
+            </p>
             <p className={styles.userEmail}>{session.user?.email}</p>
           </div>
           <button
             className={styles.signOutButton}
             onClick={() => signOut({ callbackUrl: '/' })}
-            title="Sign out"
+            title={session.isDemo ? 'Exit Demo' : 'Sign out'}
           >
             <LogOut size={16} />
           </button>
@@ -150,6 +155,9 @@ export default function AuthLayout({
             className={styles.mobileLogoImg}
           />
           <span className={styles.mobileLogoText}>Bump Book</span>
+          {session.isDemo && (
+            <span className={styles.demoBadgePill}>Demo</span>
+          )}
         </Link>
         {session.user?.image && (
           <Link href="/settings">
@@ -164,7 +172,35 @@ export default function AuthLayout({
       </header>
 
       {/* Main content */}
-      <main className={styles.mainContent}>{children}</main>
+      <main className={styles.mainContent}>
+        {session.isDemo && (
+          <div className={styles.demoBanner}>
+            <div className={styles.demoBannerContent}>
+              <span className={styles.demoBannerIcon}>🌸</span>
+              <div className={styles.demoBannerText}>
+                <strong>Demo Mode (Read-Only)</strong>: You are exploring Bump Book with sample Indian pregnancy records.
+              </div>
+            </div>
+            <div className={styles.demoBannerActions}>
+              <button
+                className={styles.demoUpgradeBtn}
+                onClick={() => signIn('google')}
+                type="button"
+              >
+                Sign in with Google
+              </button>
+              <button
+                className={styles.demoExitBtn}
+                onClick={() => signOut({ callbackUrl: '/' })}
+                type="button"
+              >
+                Exit Demo
+              </button>
+            </div>
+          </div>
+        )}
+        {children}
+      </main>
 
       {/* Mobile Bottom Navigation */}
       <nav className={styles.bottomNav}>

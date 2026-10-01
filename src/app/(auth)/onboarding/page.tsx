@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
@@ -13,10 +13,16 @@ const TOTAL_STEPS = 3;
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, update } = useSession();
   const [step, setStep] = useState(1);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (session?.isDemo) {
+      router.replace('/dashboard');
+    }
+  }, [session, router]);
 
   // Step 1: Basics
   const [lmpDate, setLmpDate] = useState('');

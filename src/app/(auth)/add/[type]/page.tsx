@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { use, useState } from 'react';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import { ArrowLeft, Check, UploadCloud, Paperclip, X } from 'lucide-react';
 import { generateId, now, today } from '@/lib/utils';
 import { RECORD_TYPES, MILESTONE_TYPES } from '@/lib/types';
@@ -16,6 +17,7 @@ export default function AddRecordFormPage({
 }) {
   const { type } = use(params);
   const router = useRouter();
+  const { data: session } = useSession();
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState('');
@@ -40,6 +42,11 @@ export default function AddRecordFormPage({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    if (session?.isDemo) {
+      showError('File upload is disabled in demo mode. Sign in with Google to upload files to Drive.');
+      return;
+    }
 
     if (file.size > 10 * 1024 * 1024) {
       showError('File size exceeds 10MB limit.');
@@ -75,6 +82,12 @@ export default function AddRecordFormPage({
 
   const handleSave = async () => {
     if (saving) return;
+
+    if (session?.isDemo) {
+      showError('Demo mode is read-only. Sign in with Google to save your pregnancy records.');
+      return;
+    }
+
     setSaving(true);
 
     try {
@@ -115,6 +128,27 @@ export default function AddRecordFormPage({
         </h1>
       </div>
 
+      {session?.isDemo && (
+        <div style={{
+          background: 'hsl(348 85% 97%)',
+          border: '1.5px solid hsl(348 70% 88%)',
+          borderRadius: 'var(--radius-xl)',
+          padding: 'var(--space-3) var(--space-4)',
+          marginBottom: 'var(--space-5)',
+          fontSize: 'var(--font-size-sm)',
+          color: 'hsl(348 60% 28%)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-3)',
+          boxShadow: '0 2px 8px -2px hsl(348 70% 50% / 0.1)',
+        }}>
+          <span style={{ fontSize: '1.25rem' }}>✨</span>
+          <span>
+            <strong>Demo Form Preview</strong>: Feel free to explore and test any input fields below. To save records to your private Google Sheet, sign in with Google.
+          </span>
+        </div>
+      )}
+
       <div className={formStyles.formCard}>
         <div className={formStyles.fieldGroup}>
           {renderFields(type as RecordType, formData, updateField, {
@@ -139,9 +173,15 @@ export default function AddRecordFormPage({
             className={formStyles.saveButton}
             onClick={handleSave}
             disabled={saving || uploading}
+            title={session?.isDemo ? 'Read-only in Demo Mode' : 'Save record'}
           >
             {saving ? (
               'Saving...'
+            ) : session?.isDemo ? (
+              <>
+                <Check size={16} />
+                <span>Save (Demo Mode)</span>
+              </>
             ) : (
               <>
                 <Check size={16} />

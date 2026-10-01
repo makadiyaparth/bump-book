@@ -75,6 +75,10 @@ export default function RecordDetailPage({
 
   const handleUpdate = async () => {
     if (isSaving || !recordType) return;
+    if (session?.isDemo) {
+      showToast('Demo mode is read-only. Sign in with Google to edit records.', true);
+      return;
+    }
     setIsSaving(true);
 
     try {
@@ -99,6 +103,11 @@ export default function RecordDetailPage({
 
   const handleDelete = async () => {
     if (isDeleting || !recordType) return;
+    if (session?.isDemo) {
+      showToast('Demo mode is read-only. Sign in with Google to delete records.', true);
+      setShowDeleteModal(false);
+      return;
+    }
     setIsDeleting(true);
 
     try {
@@ -185,13 +194,27 @@ export default function RecordDetailPage({
             <>
               <button
                 className={styles.actionBtn}
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  if (session?.isDemo) {
+                    showToast('Demo mode is read-only. Sign in with Google to edit records.', true);
+                    return;
+                  }
+                  setIsEditing(true);
+                }}
+                title={session?.isDemo ? 'Read-only in Demo Mode' : 'Edit record'}
               >
                 <Edit2 size={15} /> Edit
               </button>
               <button
                 className={`${styles.actionBtn} ${styles.deleteBtn}`}
-                onClick={() => setShowDeleteModal(true)}
+                onClick={() => {
+                  if (session?.isDemo) {
+                    showToast('Demo mode is read-only. Sign in with Google to delete records.', true);
+                    return;
+                  }
+                  setShowDeleteModal(true);
+                }}
+                title={session?.isDemo ? 'Read-only in Demo Mode' : 'Delete record'}
               >
                 <Trash2 size={15} /> Delete
               </button>

@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
+import { getDemoSheetRows } from '@/lib/demo-data';
 
 export async function GET(
   _req: NextRequest,
@@ -17,6 +18,18 @@ export async function GET(
     const session = await getServerSession(authOptions);
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { tab } = await params;
+
+    if (!SHEET_HEADERS[tab]) {
+      return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
+    }
+
+    // Serve prefilled demo data in demo mode
+    if (session.isDemo) {
+      const rows = getDemoSheetRows(tab);
+      return NextResponse.json({ data: rows });
     }
 
     const spreadsheetId = await resolveSpreadsheetId(
@@ -30,12 +43,6 @@ export async function GET(
         { error: 'Spreadsheet not found. Please complete setup.' },
         { status: 404 }
       );
-    }
-
-    const { tab } = await params;
-
-    if (!SHEET_HEADERS[tab]) {
-      return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
     }
 
     const service = new SheetsService(session.accessToken, spreadsheetId);
@@ -59,6 +66,14 @@ export async function POST(
     const session = await getServerSession(authOptions);
     if (!session?.accessToken) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Block modifications in demo mode
+    if (session.isDemo) {
+      return NextResponse.json(
+        { error: 'Demo mode is read-only. Sign in with Google to add records.' },
+        { status: 403 }
+      );
     }
 
     const spreadsheetId = await resolveSpreadsheetId(

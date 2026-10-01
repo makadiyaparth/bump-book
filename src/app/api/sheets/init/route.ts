@@ -17,7 +17,13 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check if spreadsheet already exists
+    if (session.isDemo) {
+      return NextResponse.json({
+        success: true,
+        spreadsheetId: 'demo-sheet-id',
+        folderId: 'demo-folder-id',
+      });
+    }
     let spreadsheetId = await SheetsService.findExistingSpreadsheet(
       session.accessToken
     );
