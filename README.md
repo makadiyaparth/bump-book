@@ -75,7 +75,8 @@ When a user signs in and completes onboarding, a spreadsheet named `Bump Book â€
 
 | Tab Name | Purpose | Key Columns |
 | :--- | :--- | :--- |
-| `_Config` | Metadata & app config | `key`, `value` (e.g. Drive root folder ID) |
+| `Overview & Charts` | Live dashboard & embedded charts for sharing | Auto-updating KPIs, maternal weight & BP charts, baby growth trends, and clinical query tables |
+| `_Config` | Metadata & app config | `key`, `value` (e.g. Drive root folder ID, Overview sheet ID) |
 | `Pregnancy` | Core pregnancy profile | `id`, `lmp_date`, `due_date`, `blood_group`, `rh_factor`, `pregnancy_type`, `primary_doctor`, `allergies` |
 | `DoctorVisits` | Clinical consultations | `id`, `visit_date`, `doctor_name`, `hospital`, `reason`, `doctor_observations`, `next_appointment` |
 | `Medicines` | Prescribed medications | `id`, `medicine_name`, `dosage`, `frequency`, `start_date`, `end_date`, `is_active` |

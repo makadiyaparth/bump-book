@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   Heart,
   RefreshCw,
+  BarChart3,
+  Share2,
 } from 'lucide-react';
 import { calculateDueDate } from '@/lib/pregnancy';
 import JourneyLoader from '@/components/JourneyLoader';
@@ -37,9 +39,11 @@ export default function SettingsPage() {
   });
 
   const [driveFolderId, setDriveFolderId] = useState<string | null>(null);
+  const [overviewSheetId, setOverviewSheetId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [generatingCharts, setGeneratingCharts] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -80,6 +84,13 @@ export default function SettingsPage() {
             if (folderRow?.value) {
               setDriveFolderId(folderRow.value);
             }
+
+            const overviewRow = configJson.data.find(
+              (r: Record<string, string>) => r.key === 'overview_sheet_id'
+            );
+            if (overviewRow?.value) {
+              setOverviewSheetId(overviewRow.value);
+            }
           }
         } catch {}
       } catch (err) {
@@ -116,6 +127,36 @@ export default function SettingsPage() {
     } finally {
       setSyncing(false);
       setTimeout(() => setToastMessage(null), 3000);
+    }
+  };
+
+  const handleSetupCharts = async () => {
+    if (generatingCharts) return;
+
+    if (session?.isDemo) {
+      setToastMessage('In Demo mode. Real Google Sheet charts generate when connected with Google.');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
+    setGeneratingCharts(true);
+    try {
+      const res = await fetch('/api/sheets/setup-charts', { method: 'POST' });
+      const json = await res.json();
+      if (json.success) {
+        if (json.sheetId !== undefined) {
+          setOverviewSheetId(String(json.sheetId));
+        }
+        setToastMessage('Overview & Charts sheet created in your Google Spreadsheet!');
+      } else {
+        setToastMessage(json.error || 'Failed to generate charts sheet.');
+      }
+    } catch (err) {
+      console.error('Error generating charts sheet:', err);
+      setToastMessage('Error connecting to Google Sheets.');
+    } finally {
+      setGeneratingCharts(false);
+      setTimeout(() => setToastMessage(null), 3500);
     }
   };
 
@@ -157,6 +198,12 @@ export default function SettingsPage() {
 
   const spreadsheetUrl = session?.spreadsheetId
     ? `https://docs.google.com/spreadsheets/d/${session.spreadsheetId}`
+    : null;
+
+  const chartsSheetUrl = session?.spreadsheetId
+    ? overviewSheetId !== null
+      ? `https://docs.google.com/spreadsheets/d/${session.spreadsheetId}/edit#gid=${overviewSheetId}`
+      : `https://docs.google.com/spreadsheets/d/${session.spreadsheetId}/edit`
     : null;
 
   const driveFolderUrl = driveFolderId
@@ -487,6 +534,72 @@ export default function SettingsPage() {
                   />
                   {syncing ? 'Syncing...' : 'Sync Now'}
                 </button>
+              </div>
+
+              <div className={styles.linkRow}>
+                <div className={styles.linkInfo}>
+                  <div className={styles.linkIcon}>📈</div>
+                  <div>
+                    <div className={styles.linkTitle}>Overview & Charts Sheet (Shareable)</div>
+                    <div className={styles.linkDesc}>
+                      Live visual dashboard tab in your Google Spreadsheet — includes maternal vitals, baby growth charts, and clinical queries
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 'var(--space-2)', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {chartsSheetUrl && (
+                    <a
+                      href={chartsSheetUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.openLinkBtn}
+                    >
+                      <ExternalLink size={14} /> Open Charts
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSetupCharts}
+                    disabled={generatingCharts}
+                    className={styles.openLinkBtn}
+                    style={{
+                      cursor: generatingCharts ? 'wait' : 'pointer',
+                      background: 'hsl(340 65% 96%)',
+                      borderColor: 'hsl(340 65% 82%)',
+                      color: 'hsl(340 70% 38%)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <BarChart3
+                      size={14}
+                      style={{
+                        animation: generatingCharts ? 'spin 1s linear infinite' : 'none',
+                      }}
+                    />
+                    {generatingCharts ? 'Generating...' : overviewSheetId ? 'Update Charts Sheet' : 'Generate Charts Sheet'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Sharing instructions callout */}
+              <div style={{
+                marginTop: 'var(--space-3)',
+                padding: 'var(--space-3) var(--space-4)',
+                background: 'var(--color-bg-secondary)',
+                borderRadius: 'var(--radius-md)',
+                border: '1px dashed var(--color-border)',
+                fontSize: 'var(--font-size-xs)',
+                color: 'var(--color-text-secondary)',
+                lineHeight: 'var(--line-height-relaxed)',
+              }}>
+                <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Share2 size={13} color="var(--color-primary)" />
+                  How to share your stats or charts with someone:
+                </div>
+                <span>
+                  Open the spreadsheet and click Google&apos;s <strong>Share</strong> button to invite a partner or doctor with <em>Viewer</em> access. To share <strong>only</strong> the charts and keep notes private, go to <em>File → Share → Publish to web</em> in Google Sheets and select only the <strong>Overview & Charts</strong> tab.
+                </span>
               </div>
             </>
           )}

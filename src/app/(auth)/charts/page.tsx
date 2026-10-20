@@ -51,7 +51,7 @@ interface BabyRecord {
 }
 
 export default function ChartsPage() {
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const [timeRange, setTimeRange] = useState<'all' | 't1' | 't2' | 't3'>('all');
 
   const { data: pregRows } = useSheetData('Pregnancy');
@@ -276,6 +276,25 @@ export default function ChartsPage() {
               Monitor maternal health trends and baby development milestones
             </p>
           </div>
+          {session?.spreadsheetId && (
+            <Link
+              href="/settings"
+              className={styles.rangePill}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                textDecoration: 'none',
+                alignSelf: 'flex-start',
+                fontSize: 'var(--font-size-xs)',
+                fontWeight: 600,
+                color: 'var(--color-primary)',
+              }}
+              title="View or share live charts sheet in Google Sheets"
+            >
+              <span>📊 Shareable Google Sheet Tab</span>
+            </Link>
+          )}
         </div>
 
         {/* Time Range Filter */}
