@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState<Record<string, string>>({
     lmp_date: '',
     due_date: '',
+    delivery_date: '',
     blood_group: '',
     rh_factor: '',
     pregnancy_type: 'Singleton',
@@ -63,6 +64,7 @@ export default function SettingsPage() {
           setFormData({
             lmp_date: row.lmp_date || '',
             due_date: row.due_date || '',
+            delivery_date: row.delivery_date || '',
             blood_group: row.blood_group || '',
             rh_factor: row.rh_factor || '',
             pregnancy_type: row.pregnancy_type || 'Singleton',
@@ -163,12 +165,6 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     if (saving || !profileId) return;
 
-    if (session?.isDemo) {
-      setToastMessage('Demo mode is read-only. Sign in with Google to edit your profile.');
-      setTimeout(() => setToastMessage(null), 3500);
-      return;
-    }
-
     setSaving(true);
 
     try {
@@ -186,7 +182,11 @@ export default function SettingsPage() {
       // Invalidate Pregnancy cache so Dashboard and Timeline show fresh data
       invalidateSheetTab('Pregnancy');
 
-      setToastMessage('Pregnancy profile updated successfully');
+      setToastMessage(
+        session?.isDemo
+          ? 'Pregnancy profile updated in Demo Mode'
+          : 'Pregnancy profile updated successfully'
+      );
       setTimeout(() => setToastMessage(null), 3000);
     } catch (err) {
       console.error('Save error:', err);
@@ -308,6 +308,53 @@ export default function SettingsPage() {
               </div>
 
               <div className={styles.fieldRow}>
+                <div className={styles.field} style={{ gridColumn: '1 / -1' }}>
+                  <label htmlFor="delivery-date" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span>Actual Delivery Date {formData.delivery_date ? '🎉' : '(Optional)'}</span>
+                    {formData.delivery_date && (
+                      <span style={{ fontSize: 'var(--font-size-xs)', color: 'var(--color-primary)', fontWeight: 600 }}>
+                        Delivered
+                      </span>
+                    )}
+                  </label>
+                  <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+                    <input
+                      id="delivery-date"
+                      type="date"
+                      value={formData.delivery_date}
+                      onChange={(e) => updateField('delivery_date', e.target.value)}
+                      style={{ flex: 1 }}
+                    />
+                    {formData.delivery_date && (
+                      <button
+                        type="button"
+                        onClick={() => updateField('delivery_date', '')}
+                        style={{
+                          padding: '8px 14px',
+                          fontSize: 'var(--font-size-xs)',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg)',
+                          color: 'var(--color-text-secondary)',
+                          cursor: 'pointer',
+                          fontWeight: 500,
+                          whiteSpace: 'nowrap',
+                        }}
+                        title="Clear delivery date to revert back to pregnancy view"
+                      >
+                        Clear Date
+                      </button>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--color-text-tertiary)', marginTop: '4px', display: 'block', lineHeight: 1.4 }}>
+                    {formData.delivery_date
+                      ? 'Baby has arrived! Your dashboard and journey timeline will switch to your baby’s age and postpartum milestone view.'
+                      : 'For deliveries before the expected due date (or on birth day). Enter the date here to update your dashboards and vitals accordingly.'}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.fieldRow}>
                 <div className={styles.field}>
                   <label htmlFor="pregnancy-type">Pregnancy Type</label>
                   <select
@@ -402,13 +449,13 @@ export default function SettingsPage() {
                 className={styles.saveBtn}
                 onClick={handleSaveProfile}
                 disabled={saving}
-                title={session?.isDemo ? 'Read-only in Demo Mode' : 'Save Profile Changes'}
+                title="Save Profile Changes"
               >
                 <Check size={16} />
                 {saving
                   ? 'Saving changes...'
                   : session?.isDemo
-                  ? 'Save Profile (Read-Only Demo)'
+                  ? 'Save Profile Changes (Demo Mode)'
                   : 'Save Profile Changes'}
               </button>
             </div>

@@ -45,13 +45,25 @@ export default function TimelinePage() {
   const { data: milestonesRows } = useSheetData('Milestones');
   const { data: notesRows } = useSheetData('Notes');
 
-  const userLmp = useMemo(() => {
-    return pregRows?.[0]?.lmp_date || null;
+  const userPregnancy = useMemo(() => {
+    return pregRows?.[0] || null;
   }, [pregRows]);
+
+  const userLmp = userPregnancy?.lmp_date || null;
+  const userDelivery = userPregnancy?.delivery_date || null;
 
   const items = useMemo<TimelineItem[]>(() => {
     const calcWeek = (dateStr: string): string | undefined => {
       if (!userLmp || !dateStr) return undefined;
+      // If baby was delivered and this event is on or after delivery
+      if (userDelivery && dateStr >= userDelivery) {
+        const diffBirth = new Date(dateStr).getTime() - new Date(userDelivery).getTime();
+        const daysAfter = Math.floor(diffBirth / (24 * 60 * 60 * 1000));
+        if (daysAfter >= 0 && daysAfter < 365) {
+          return daysAfter === 0 ? 'Birth Day 🍼' : `Postpartum Day ${daysAfter}`;
+        }
+      }
+
       const diffMs = new Date(dateStr).getTime() - new Date(userLmp).getTime();
       const totalDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
       if (totalDays < 0 || totalDays > 300) return undefined;
@@ -217,6 +229,44 @@ export default function TimelinePage() {
       }
     }
 
+    // Injected Delivery Milestone if delivery_date is recorded in profile
+    if (userDelivery && userLmp) {
+      const alreadyHasDelivery = milestonesRows?.some(
+        (r) => r.milestone_type === 'Delivery' || r.milestone_date === userDelivery
+      );
+      if (!alreadyHasDelivery) {
+        const diffMs = new Date(userDelivery).getTime() - new Date(userLmp).getTime();
+        const totalDays = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)));
+        const weeks = Math.floor(totalDays / 7);
+        const days = totalDays % 7;
+        const dueDate = userPregnancy?.due_date;
+        let earlyLateTag = '';
+        if (dueDate) {
+          const diffFromDue = Math.floor(
+            (new Date(userDelivery).getTime() - new Date(dueDate).getTime()) /
+              (24 * 60 * 60 * 1000)
+          );
+          if (diffFromDue < 0) {
+            earlyLateTag = ` • ${Math.abs(diffFromDue)} days early`;
+          } else if (diffFromDue > 0) {
+            earlyLateTag = ` • ${diffFromDue} days past due date`;
+          }
+        }
+
+        timelineList.push({
+          id: 'profile-delivery-event',
+          date: userDelivery,
+          type: 'milestone',
+          typeLabel: 'Baby Delivery 🎉',
+          title: 'Baby Has Arrived! 🍼',
+          subtitle: `Delivered safely at Week ${weeks} + ${days}d${earlyLateTag}. Welcome to the world!`,
+          icon: '👶',
+          color: 'hsl(340, 80%, 55%)',
+          pregnancyWeek: `Week ${weeks} + ${days}d`,
+        });
+      }
+    }
+
     // Notes
     if (notesRows) {
       for (const r of notesRows) {
@@ -243,6 +293,8 @@ export default function TimelinePage() {
     return timelineList;
   }, [
     userLmp,
+    userDelivery,
+    userPregnancy,
     doctorVisitsRows,
     medicinesRows,
     testsRows,

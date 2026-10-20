@@ -71,6 +71,19 @@ export class SheetsService {
     const headers = rows[0];
     const schemaHeaders = SHEET_HEADERS[tab] || [];
     const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
+
+    // Auto-update header row if new columns were added to schema (e.g. delivery_date)
+    if (headers.length < schemaHeaders.length) {
+      this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A1`,
+        valueInputOption: 'RAW',
+        requestBody: { values: [schemaHeaders] },
+      }).catch((err) => {
+        console.warn(`Could not sync headers for tab ${tab}:`, err);
+      });
+    }
+
     return rows.slice(1).map((row) => {
       const obj: Record<string, string> = {};
       headerList.forEach((header: string, i: number) => {
@@ -358,9 +371,9 @@ export class SheetsService {
       [],
       // Row 4: KPI Card Headers
       [
-        'CURRENT GESTATION',
+        '=IF(ISBLANK(Pregnancy!O2), "CURRENT GESTATION", "GESTATION AT DELIVERY")',
         '',
-        'ESTIMATED DUE DATE',
+        '=IF(ISBLANK(Pregnancy!O2), "ESTIMATED DUE DATE", "DELIVERY DATE & STATUS")',
         '',
         'LATEST MATERNAL VITALS',
         '',
@@ -368,9 +381,9 @@ export class SheetsService {
       ],
       // Row 5: KPI Card Formulas
       [
-        '="Week " & IFERROR(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(TODAY() - DATEVALUE(Pregnancy!B2)), 7), "--") & " days"',
+        '=IF(ISBLANK(Pregnancy!O2), "Week " & IFERROR(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(TODAY() - DATEVALUE(Pregnancy!B2)), 7), "--") & " days", "Delivered: Week " & IFERROR(INT((DATEVALUE(Pregnancy!O2) - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(DATEVALUE(Pregnancy!O2) - DATEVALUE(Pregnancy!B2)), 7), "--") & " days")',
         '',
-        '="Due: " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " (" & IFERROR(DATEVALUE(Pregnancy!C2) - TODAY(), "--") & " days left)"',
+        '=IF(ISBLANK(Pregnancy!O2), "Due: " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " (" & IFERROR(DATEVALUE(Pregnancy!C2) - TODAY(), "--") & " days left)", "Born: " & IFERROR(TEXT(DATEVALUE(Pregnancy!O2), "dd mmm yyyy"), Pregnancy!O2) & " (" & IFERROR(INT(TODAY() - DATEVALUE(Pregnancy!O2)), 0) & " days old)")',
         '',
         '="BP: " & IFERROR(INDEX(FILTER(HealthStats!D2:D & "/" & HealthStats!E2:E, HealthStats!D2:D<>""), ROWS(FILTER(HealthStats!D2:D, HealthStats!D2:D<>""))), "--") & " mmHg • Wt: " & IFERROR(INDEX(FILTER(HealthStats!C2:C, HealthStats!C2:C<>""), ROWS(FILTER(HealthStats!C2:C, HealthStats!C2:C<>""))), "--") & " kg"',
         '',
@@ -378,9 +391,9 @@ export class SheetsService {
       ],
       // Row 6: KPI Card Details
       [
-        '="Trimester: " & IFERROR(IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 13, "1st Trimester", IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 28, "2nd Trimester", "3rd Trimester")), "--")',
+        '=IF(ISBLANK(Pregnancy!O2), "Trimester: " & IFERROR(IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 13, "1st Trimester", IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 28, "2nd Trimester", "3rd Trimester")), "--"), "Status: Baby Arrived! 🎉")',
         '',
-        '="Type: " & Pregnancy!F2 & " • Blood: " & Pregnancy!D2 & " " & Pregnancy!E2',
+        '=IF(ISBLANK(Pregnancy!O2), "Type: " & Pregnancy!F2 & " • Blood: " & Pregnancy!D2 & " " & Pregnancy!E2, "Due was " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " • " & Pregnancy!F2)',
         '',
         '="Doctor: " & Pregnancy!K2 & " (" & Pregnancy!L2 & ")"',
         '',

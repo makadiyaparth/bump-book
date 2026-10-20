@@ -8,6 +8,7 @@ export interface PregnancyProfile {
   id: string;
   lmpDate: string;          // ISO date
   dueDate: string;          // ISO date
+  deliveryDate?: string;    // ISO date (if baby has arrived)
   bloodGroup: string;
   rhFactor: string;
   pregnancyType: 'Singleton' | 'Twins' | 'Triplets' | 'Other';
@@ -235,6 +236,14 @@ export interface PregnancyInfo {
   trimester: 1 | 2 | 3;
   progressPercent: number;
   dueDate: Date;
+  isDelivered: boolean;
+  deliveryDate: Date | null;
+  deliveryWeek?: number;
+  deliveryDay?: number;
+  daysEarlyOrLate?: number; // negative: early, positive: late, 0: on due date
+  babyAgeDays?: number;
+  babyAgeWeeks?: number;
+  babyAgeRemainingDays?: number;
 }
 
 // ─── Sheet Tab Names ───
@@ -260,7 +269,7 @@ export const SHEET_HEADERS: Record<string, string[]> = {
     'id', 'lmp_date', 'due_date', 'blood_group', 'rh_factor',
     'pregnancy_type', 'previous_pregnancies', 'previous_deliveries',
     'allergies', 'medical_conditions', 'primary_doctor', 'primary_hospital',
-    'created_at', 'updated_at',
+    'created_at', 'updated_at', 'delivery_date',
   ],
   [SHEET_TABS.doctorVisits]: [
     'id', 'visit_date', 'doctor_name', 'hospital', 'reason',

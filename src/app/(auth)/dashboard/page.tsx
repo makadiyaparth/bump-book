@@ -3,12 +3,12 @@
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Plus, X, Check, Sparkles } from 'lucide-react';
 import { getPregnancyInfo, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
 import { formatDate, formatDateShort, formatRelativeDate, getGreeting } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
-import { useSheetData } from '@/lib/useSheetData';
+import { useSheetData, invalidateSheetTab } from '@/lib/useSheetData';
 import type {
   PregnancyProfile,
   HealthStats,
@@ -29,6 +29,10 @@ export default function DashboardPage() {
   const { data: medRows } = useSheetData('Medicines');
   const { data: visitRows } = useSheetData('DoctorVisits');
 
+  const [showDeliveryModal, setShowDeliveryModal] = useState(false);
+  const [deliveryDateInput, setDeliveryDateInput] = useState('');
+  const [modalSaving, setModalSaving] = useState(false);
+
   const { pregnancy, pregnancyInfo } = useMemo(() => {
     if (!pregRows || pregRows.length === 0) {
       return { pregnancy: null, pregnancyInfo: null };
@@ -38,6 +42,7 @@ export default function DashboardPage() {
       id: row.id,
       lmpDate: row.lmp_date,
       dueDate: row.due_date,
+      deliveryDate: row.delivery_date || undefined,
       bloodGroup: row.blood_group,
       rhFactor: row.rh_factor,
       pregnancyType: row.pregnancy_type as PregnancyProfile['pregnancyType'],
@@ -52,9 +57,58 @@ export default function DashboardPage() {
     };
     return {
       pregnancy: profile,
-      pregnancyInfo: getPregnancyInfo(profile.lmpDate),
+      pregnancyInfo: getPregnancyInfo(profile.lmpDate, profile.deliveryDate),
     };
   }, [pregRows]);
+
+  const openDeliveryModal = () => {
+    setDeliveryDateInput(
+      pregnancy?.deliveryDate || new Date().toISOString().split('T')[0]
+    );
+    setShowDeliveryModal(true);
+  };
+
+  const handleSaveDeliveryDate = async (newDate: string) => {
+    if (!pregnancy?.id) return;
+    setModalSaving(true);
+    try {
+      const res = await fetch(`/api/sheets/Pregnancy/${pregnancy.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          delivery_date: newDate,
+          updated_at: new Date().toISOString(),
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to update delivery date');
+      await invalidateSheetTab('Pregnancy');
+      setShowDeliveryModal(false);
+    } catch (err) {
+      console.error('Error saving delivery date:', err);
+      alert('Failed to save delivery date. Please try again.');
+    } finally {
+      setModalSaving(false);
+    }
+  };
+
+  const previewDiffDays = useMemo(() => {
+    if (!pregnancy?.dueDate || !deliveryDateInput) return null;
+    const due = new Date(pregnancy.dueDate);
+    const deliv = new Date(deliveryDateInput);
+    if (isNaN(deliv.getTime()) || isNaN(due.getTime())) return null;
+    return Math.floor((deliv.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+  }, [pregnancy?.dueDate, deliveryDateInput]);
+
+  const previewGestation = useMemo(() => {
+    if (!pregnancy?.lmpDate || !deliveryDateInput) return null;
+    const lmp = new Date(pregnancy.lmpDate);
+    const deliv = new Date(deliveryDateInput);
+    if (isNaN(deliv.getTime()) || isNaN(lmp.getTime())) return null;
+    const totalDays = Math.max(0, Math.floor((deliv.getTime() - lmp.getTime()) / (1000 * 60 * 60 * 24)));
+    const w = Math.floor(totalDays / 7);
+    const d = totalDays % 7;
+    return { w, d, totalDays };
+  }, [pregnancy?.lmpDate, deliveryDateInput]);
 
   const latestHealth = useMemo<HealthStats | null>(() => {
     if (!healthRows || healthRows.length === 0) return null;
@@ -219,19 +273,65 @@ export default function DashboardPage() {
     <div className={styles.dashboard}>
       {/* ─── Greeting ─── */}
       <div className={styles.greeting}>
-        <p className={styles.greetingDiaryTag}>our personal motherhood diary ✨</p>
+        <p className={styles.greetingDiaryTag}>
+          {pregnancyInfo?.isDelivered
+            ? 'our postpartum journey & sweet memories 🍼'
+            : 'our personal motherhood diary ✨'}
+        </p>
         <h1 className={styles.greetingText}>
           {greeting}, <span className={styles.greetingName}>{firstName}</span>{' '}
-          <span className={styles.greetingEmoji}>👋</span>
+          <span className={styles.greetingEmoji}>
+            {pregnancyInfo?.isDelivered ? '🍼' : '👋'}
+          </span>
         </h1>
         {pregnancyInfo && (
           <div className={styles.greetingMetaRow}>
-            <span className={styles.greetingDuePill}>
-              Due {formatDate(pregnancy!.dueDate)}
-            </span>
-            <span className={styles.handwrittenCountdown}>
-              ~{pregnancyInfo.daysRemaining} sweet days until we meet you! 💕
-            </span>
+            {pregnancyInfo.isDelivered ? (
+              <>
+                <span className={styles.greetingDuePill}>
+                  Delivered {formatDate(pregnancyInfo.deliveryDate!)} 🎉
+                </span>
+                <span className={styles.deliveredHandwritten}>
+                  {pregnancyInfo.daysEarlyOrLate && pregnancyInfo.daysEarlyOrLate < 0
+                    ? `Arrived ${Math.abs(pregnancyInfo.daysEarlyOrLate)} days early (Week ${pregnancyInfo.deliveryWeek} + ${pregnancyInfo.deliveryDay}d)! Welcome baby! 🍼🎉`
+                    : pregnancyInfo.daysEarlyOrLate && pregnancyInfo.daysEarlyOrLate > 0
+                    ? `Arrived ${pregnancyInfo.daysEarlyOrLate} days past due date (Week ${pregnancyInfo.deliveryWeek} + ${pregnancyInfo.deliveryDay}d)! Welcome baby! 🍼🎉`
+                    : `Arrived on expected due date! Welcome baby! 🍼🎉`}
+                </span>
+                <span className={styles.greetingDuePill}>
+                  Baby is {pregnancyInfo.babyAgeDays === 0
+                    ? 'newborn today'
+                    : pregnancyInfo.babyAgeDays === 1
+                    ? '1 day old'
+                    : `${pregnancyInfo.babyAgeDays} days old (${pregnancyInfo.babyAgeWeeks}w ${pregnancyInfo.babyAgeRemainingDays}d)`} 💕
+                </span>
+                <button
+                  type="button"
+                  onClick={openDeliveryModal}
+                  className={styles.deliveryMetaAction}
+                  title="Edit delivery date"
+                >
+                  ✏️ Edit Delivery Date
+                </button>
+              </>
+            ) : (
+              <>
+                <span className={styles.greetingDuePill}>
+                  Due {formatDate(pregnancy!.dueDate)}
+                </span>
+                <span className={styles.handwrittenCountdown}>
+                  ~{pregnancyInfo.daysRemaining} sweet days until we meet you! 💕
+                </span>
+                <button
+                  type="button"
+                  onClick={openDeliveryModal}
+                  className={styles.deliveryMetaAction}
+                  title="If delivery happened before expected date (or today), record it here"
+                >
+                  🍼 Baby arrived? Record delivery date
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>
@@ -247,7 +347,9 @@ export default function DashboardPage() {
                   {pregnancyInfo.currentWeek}
                 </span>
                 <div className={styles.weekLabelStack}>
-                  <span className={styles.weekUnit}>WEEKS</span>
+                  <span className={styles.weekUnit}>
+                    {pregnancyInfo.isDelivered ? 'WEEKS AT BIRTH' : 'WEEKS'}
+                  </span>
                   <span className={styles.progressDayBadge}>
                     +{pregnancyInfo.currentDay} day{pregnancyInfo.currentDay !== 1 ? 's' : ''}
                   </span>
@@ -255,29 +357,61 @@ export default function DashboardPage() {
               </div>
 
               <div className={styles.progressBadges}>
-                <span className={styles.progressTrimester}>
-                  {getTrimesterLabel(pregnancyInfo.trimester)}
-                </span>
-                <span className={styles.progressCountdown}>
-                  {pregnancyInfo.daysRemaining} days to go 🎈
-                </span>
+                {pregnancyInfo.isDelivered ? (
+                  <>
+                    <span className={styles.deliveredBadge}>
+                      Delivered 🎉
+                    </span>
+                    <span className={styles.babyAgeBadge}>
+                      Baby: {pregnancyInfo.babyAgeDays}d old 👶
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className={styles.progressTrimester}>
+                      {getTrimesterLabel(pregnancyInfo.trimester)}
+                    </span>
+                    <span className={styles.progressCountdown}>
+                      {pregnancyInfo.daysRemaining} days to go 🎈
+                    </span>
+                  </>
+                )}
               </div>
             </div>
 
             <div className={styles.progressBarWrapper}>
               <div className={styles.progressBarContainer}>
                 <div
-                  className={styles.progressBarFill}
+                  className={pregnancyInfo.isDelivered ? styles.deliveredProgressBarFill : styles.progressBarFill}
                   style={{ width: `${pregnancyInfo.progressPercent}%` }}
                 />
               </div>
               <div className={styles.progressFooter}>
                 <span>Conception</span>
                 <span className={styles.progressPercentText}>
-                  {Math.round(pregnancyInfo.progressPercent)}% completed
+                  {pregnancyInfo.isDelivered
+                    ? '100% completed • Journey Complete 🎉'
+                    : `${Math.round(pregnancyInfo.progressPercent)}% completed`}
                 </span>
-                <span>Delivery ({formatDateShort(pregnancy!.dueDate)})</span>
+                <span>
+                  {pregnancyInfo.isDelivered
+                    ? `Delivered (${formatDateShort(pregnancyInfo.deliveryDate!)})`
+                    : `Delivery (${formatDateShort(pregnancy!.dueDate)})`}
+                </span>
               </div>
+              {pregnancyInfo.isDelivered && (
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: 'var(--color-text-tertiary)',
+                  textAlign: 'right',
+                  marginTop: '4px',
+                }}>
+                  Expected due date was {formatDateShort(pregnancy!.dueDate)}
+                  {pregnancyInfo.daysEarlyOrLate && pregnancyInfo.daysEarlyOrLate < 0
+                    ? ` • arrived ${Math.abs(pregnancyInfo.daysEarlyOrLate)} days early`
+                    : ''}
+                </div>
+              )}
             </div>
 
             {/* Baby Development Box */}
@@ -286,14 +420,21 @@ export default function DashboardPage() {
               <div className={styles.milestoneContent}>
                 <div className={styles.milestoneHeadingRow}>
                   <p className={styles.milestoneHeading}>
-                    Baby is the size of a <span className={styles.milestoneFruit}>{milestone.fruit}</span>
+                    {pregnancyInfo.isDelivered
+                      ? `Baby arrived at Week ${pregnancyInfo.currentWeek}! Size of a `
+                      : 'Baby is the size of a '}
+                    <span className={styles.milestoneFruit}>{milestone.fruit}</span>
                   </p>
                   <div className={styles.milestoneTagsRow}>
                     <span className={styles.milestoneTag}>📏 {milestone.lengthCm}</span>
                     <span className={styles.milestoneTag}>⚖️ {milestone.weightGrams}</span>
                   </div>
                 </div>
-                <p className={styles.milestoneDetail}>{milestone.detail}</p>
+                <p className={styles.milestoneDetail}>
+                  {pregnancyInfo.isDelivered
+                    ? `Congratulations on your little one's safe arrival on ${formatDate(pregnancyInfo.deliveryDate!)}! At ${pregnancyInfo.deliveryWeek} weeks + ${pregnancyInfo.deliveryDay} days, your little miracle is here.`
+                    : milestone.detail}
+                </p>
               </div>
             </div>
           </div>
@@ -553,6 +694,108 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* ─── Record / Edit Delivery Date Modal ─── */}
+      {showDeliveryModal && (
+        <div
+          className={styles.modalOverlay}
+          onClick={() => !modalSaving && setShowDeliveryModal(false)}
+        >
+          <div
+            className={styles.modalCard}
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delivery-modal-title"
+          >
+            <div className={styles.modalHeader}>
+              <div className={styles.modalTitleRow}>
+                <span style={{ fontSize: '1.5rem' }}>🍼</span>
+                <h2 id="delivery-modal-title" className={styles.modalTitle}>
+                  {pregnancy?.deliveryDate ? 'Edit Delivery Date' : 'Record Delivery Date'}
+                </h2>
+              </div>
+              <button
+                type="button"
+                className={styles.modalCloseBtn}
+                onClick={() => setShowDeliveryModal(false)}
+                disabled={modalSaving}
+                aria-label="Close dialog"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className={styles.modalSubtitle}>
+              If baby arrived early (or on birth day), record the date here. Your gestational progress, postpartum milestone cards, and journey timeline will update accordingly.
+            </p>
+
+            <div className={styles.modalFieldGroup}>
+              <label htmlFor="modal-delivery-date" className={styles.modalLabel}>
+                Actual Delivery Date *
+              </label>
+              <input
+                id="modal-delivery-date"
+                type="date"
+                value={deliveryDateInput}
+                onChange={(e) => setDeliveryDateInput(e.target.value)}
+                className={styles.modalInput}
+                max={new Date().toISOString().split('T')[0]}
+              />
+
+              {previewGestation && (
+                <div className={styles.modalEarlyPill}>
+                  <Sparkles size={16} style={{ flexShrink: 0 }} />
+                  <div>
+                    <div>
+                      <strong>Gestation at delivery:</strong> Week {previewGestation.w} + {previewGestation.d} day{previewGestation.d !== 1 ? 's' : ''}
+                    </div>
+                    {previewDiffDays !== null && (
+                      <div style={{ marginTop: '2px' }}>
+                        {previewDiffDays < 0
+                          ? `🎉 Early arrival: ${Math.abs(previewDiffDays)} day${Math.abs(previewDiffDays) !== 1 ? 's' : ''} before expected due date`
+                          : previewDiffDays === 0
+                          ? `🎯 Arrived right on your expected due date!`
+                          : `🎉 Arrived ${previewDiffDays} day${previewDiffDays !== 1 ? 's' : ''} past expected due date`}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className={styles.modalActions}>
+              {pregnancy?.deliveryDate && (
+                <button
+                  type="button"
+                  className={styles.modalClearBtn}
+                  onClick={() => handleSaveDeliveryDate('')}
+                  disabled={modalSaving}
+                >
+                  Clear Delivery Date
+                </button>
+              )}
+              <button
+                type="button"
+                className={styles.modalCancelBtn}
+                onClick={() => setShowDeliveryModal(false)}
+                disabled={modalSaving}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.modalSaveBtn}
+                onClick={() => handleSaveDeliveryDate(deliveryDateInput)}
+                disabled={modalSaving || !deliveryDateInput}
+              >
+                <Check size={16} />
+                {modalSaving ? 'Saving...' : 'Save Delivery Date'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

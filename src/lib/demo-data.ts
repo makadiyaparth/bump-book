@@ -22,7 +22,7 @@ function addDays(d: Date, days: number): Date {
  * Generates all demo data anchored relative to the current timestamp.
  * Target gestational age: 24 weeks + 3 days (171 days past LMP).
  */
-export function getDemoSheetRows(tabName: string): Record<string, string>[] {
+function getRawDemoSheetRows(tabName: string): Record<string, string>[] {
   const today = new Date();
   
   // LMP is 171 days ago (Week 24, Day 3)
@@ -72,6 +72,7 @@ export function getDemoSheetRows(tabName: string): Record<string, string>[] {
           primary_hospital: 'Cloudnine Maternity Hospital, Whitefield',
           created_at: `${w4}T10:00:00.000Z`,
           updated_at: `${w24}T09:30:00.000Z`,
+          delivery_date: '',
         },
       ];
 
@@ -685,7 +686,28 @@ export function getDemoSheetRows(tabName: string): Record<string, string>[] {
   }
 }
 
+// In-memory overrides for interactive testing in Demo mode
+const demoOverrides = new Map<string, Record<string, string>>();
+
+export function updateDemoSheetRow(tabName: string, id: string, data: Record<string, string>): void {
+  const existing = getDemoSheetRowById(tabName, id) || {};
+  demoOverrides.set(`${tabName}:${id}`, { ...existing, ...data });
+}
+
+export function getDemoSheetRows(tabName: string): Record<string, string>[] {
+  const rows = getRawDemoSheetRows(tabName);
+  return rows.map((row) => {
+    const key = row.id ? `${tabName}:${row.id}` : (row.key ? `${tabName}:${row.key}` : null);
+    if (key && demoOverrides.has(key)) {
+      return { ...row, ...demoOverrides.get(key) };
+    }
+    return row;
+  });
+}
+
 export function getDemoSheetRowById(tabName: string, id: string): Record<string, string> | null {
   const rows = getDemoSheetRows(tabName);
   return rows.find((r) => r.id === id) || null;
 }
+
+

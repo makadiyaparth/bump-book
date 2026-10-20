@@ -58,9 +58,23 @@ export default function ChartsPage() {
   const { data: healthRows, isLoading: healthLoading } = useSheetData('HealthStats');
   const { data: babyRows, isLoading: babyLoading } = useSheetData('BabyStats');
 
-  const lmpDate = useMemo(() => {
-    return pregRows?.[0]?.lmp_date || null;
+  const pregProfile = useMemo(() => {
+    return pregRows?.[0] || null;
   }, [pregRows]);
+
+  const lmpDate = pregProfile?.lmp_date || null;
+  const deliveryDate = pregProfile?.delivery_date || null;
+
+  const deliveryGestation = useMemo(() => {
+    if (!deliveryDate || !lmpDate) return null;
+    const totalDays = Math.max(
+      0,
+      Math.floor((new Date(deliveryDate).getTime() - new Date(lmpDate).getTime()) / (24 * 60 * 60 * 1000))
+    );
+    const weeks = Math.floor(totalDays / 7);
+    const days = totalDays % 7;
+    return { weeks, days, totalDays };
+  }, [deliveryDate, lmpDate]);
 
   const healthData = useMemo<HealthRecord[]>(() => {
     if (!healthRows) return [];
@@ -275,6 +289,28 @@ export default function ChartsPage() {
             <p className={styles.subtitle}>
               Monitor maternal health trends and baby development milestones
             </p>
+            {deliveryDate && (
+              <div
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginTop: 'var(--space-2)',
+                  padding: '4px 14px',
+                  background: 'hsl(340 85% 97%)',
+                  border: '1px solid hsl(340 70% 90%)',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: 'var(--font-size-xs)',
+                  color: 'hsl(340 70% 36%)',
+                  fontWeight: 600,
+                }}
+              >
+                <span>🍼 Delivered on {formatDateShort(deliveryDate)}</span>
+                {deliveryGestation && (
+                  <span>(Week {deliveryGestation.weeks} + {deliveryGestation.days}d)</span>
+                )}
+              </div>
+            )}
           </div>
           {session?.spreadsheetId && (
             <Link

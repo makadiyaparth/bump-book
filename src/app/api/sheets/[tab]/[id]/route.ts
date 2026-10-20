@@ -8,7 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
-import { getDemoSheetRowById } from '@/lib/demo-data';
+import { getDemoSheetRowById, updateDemoSheetRow } from '@/lib/demo-data';
 import { ServerCache } from '@/lib/cache';
 
 export async function GET(
@@ -71,12 +71,17 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Block modifications in demo mode
+    const { tab, id } = await params;
+
+    if (!SHEET_HEADERS[tab]) {
+      return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
+    }
+
+    // In demo mode, allow updating demo record in memory
     if (session.isDemo) {
-      return NextResponse.json(
-        { error: 'Demo mode is read-only. Sign in with Google to edit records.' },
-        { status: 403 }
-      );
+      const body = await req.json();
+      updateDemoSheetRow(tab, id, body);
+      return NextResponse.json({ success: true });
     }
 
     const spreadsheetId = await resolveSpreadsheetId(
@@ -90,12 +95,6 @@ export async function PUT(
         { error: 'Spreadsheet not found. Please complete setup.' },
         { status: 404 }
       );
-    }
-
-    const { tab, id } = await params;
-
-    if (!SHEET_HEADERS[tab]) {
-      return NextResponse.json({ error: 'Invalid tab' }, { status: 400 });
     }
 
     const body = await req.json();
