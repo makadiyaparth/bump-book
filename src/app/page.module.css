@@ -108,21 +108,29 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-4) var(--space-8);
-  background-color: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  background-color: hsl(0 0% 100% / 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1.5px solid hsl(348 20% 88% / 0.8);
   border-radius: var(--radius-xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text);
   cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: var(--shadow-md);
+  transition: all var(--transition-spring);
+  box-shadow: 
+    0 1px 2px hsl(348 20% 20% / 0.04),
+    0 4px 14px -2px hsl(348 30% 50% / 0.08),
+    inset 0 1px 0 hsl(0 0% 100% / 0.9);
 }
 
 .signInButton:hover {
   border-color: var(--color-primary);
-  box-shadow: var(--shadow-lg), var(--shadow-glow);
-  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px -4px hsl(348 40% 50% / 0.16),
+    0 0 20px hsl(348 65% 55% / 0.15),
+    inset 0 1px 0 hsl(0 0% 100% / 1);
+  transform: translateY(-2px) scale(1.01);
 }
 
 .signInButton:active {
@@ -160,22 +168,47 @@
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-6);
-  background: linear-gradient(135deg, hsl(348 75% 96%), hsl(280 65% 96%));
+  background: linear-gradient(135deg, hsl(348 75% 97%), hsl(280 65% 97%));
   border: 1.5px solid hsl(348 70% 88%);
   border-radius: var(--radius-xl);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-primary);
   cursor: pointer;
-  transition: all var(--transition-base);
-  box-shadow: 0 4px 14px -3px hsl(348 75% 65% / 0.18);
+  transition: all var(--transition-spring);
+  box-shadow: 
+    0 4px 14px -3px hsl(348 75% 65% / 0.18),
+    inset 0 1px 0 hsl(0 0% 100% / 0.85);
+  position: relative;
+  overflow: hidden;
+}
+
+.demoButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(0 0% 100% / 0.3) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 600ms ease;
+  pointer-events: none;
+}
+
+.demoButton:hover:not(:disabled)::before {
+  transform: translateX(100%);
 }
 
 .demoButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, hsl(348 85% 93%), hsl(280 75% 93%));
+  background: linear-gradient(135deg, hsl(348 85% 94%), hsl(280 75% 94%));
   border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px -3px hsl(348 75% 60% / 0.25);
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 
+    0 8px 22px -3px hsl(348 75% 60% / 0.28),
+    inset 0 1px 0 hsl(0 0% 100% / 0.95);
 }
 
 .demoButton:disabled {
@@ -220,16 +253,19 @@
 .featureCard {
   text-align: center;
   padding: var(--space-5);
-  background: hsl(0 0% 100% / 0.7);
-  backdrop-filter: blur(12px);
+  background: hsl(0 0% 100% / 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-radius: var(--radius-xl);
-  border: 1px solid hsl(0 0% 100% / 0.8);
-  transition: transform var(--transition-base), box-shadow var(--transition-base);
+  border: 1px solid hsl(348 30% 90% / 0.75);
+  box-shadow: var(--shadow-card);
+  transition: transform var(--transition-spring), box-shadow var(--transition-spring), border-color var(--transition-base);
 }
 
 .featureCard:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-card-hover);
+  border-color: hsl(348 50% 82% / 0.9);
 }
 
 .featureIcon {

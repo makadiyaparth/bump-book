@@ -120,13 +120,33 @@
   --shadow-lg: 0 10px 15px -3px hsl(0 0% 0% / 0.08), 0 4px 6px -4px hsl(0 0% 0% / 0.05);
   --shadow-xl: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.06);
   --shadow-glow: 0 0 20px hsl(340 65% 55% / 0.15);
-  --shadow-card: 0 2px 8px hsl(0 0% 0% / 0.06), 0 0 1px hsl(0 0% 0% / 0.08);
+  --shadow-glow-warm: 0 0 24px hsl(348 65% 55% / 0.22);
+  --shadow-card:
+    0 1px 2px hsl(348 20% 20% / 0.03),
+    0 4px 16px -2px hsl(348 40% 50% / 0.05),
+    0 10px 24px -4px hsl(30 25% 45% / 0.04),
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.85);
+  --shadow-card-hover:
+    0 2px 4px hsl(348 20% 20% / 0.04),
+    0 8px 24px -4px hsl(348 40% 50% / 0.09),
+    0 16px 36px -6px hsl(30 25% 45% / 0.07),
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.95);
+  --shadow-card-premium:
+    0 1px 2px hsl(348 20% 20% / 0.03),
+    0 6px 20px -3px hsl(348 40% 50% / 0.07),
+    0 16px 32px -4px hsl(30 30% 50% / 0.06),
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.9);
+  --shadow-btn-primary:
+    0 4px 14px hsl(348 55% 52% / 0.3),
+    inset 0 1px 0 0 hsl(0 0% 100% / 0.3);
 
   /* ─── Transitions ─── */
   --transition-fast: 100ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 350ms ease;
   --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-spring: 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ─── Z-Index Scale ─── */
   --z-dropdown: 100;

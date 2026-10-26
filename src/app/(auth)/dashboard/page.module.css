@@ -73,20 +73,25 @@
 }
 
 /* ─── Progress card (Minimal, High-Contrast, Playful Scale) ─── */
+/* ─── Progress card (Minimal, High-Contrast, Playful Scale) ─── */
 .progressCard {
-  background-color: var(--color-surface);
+  background: hsl(0 0% 100% / 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: var(--radius-2xl);
   padding: var(--space-6);
   color: var(--color-text);
   margin-bottom: var(--space-6);
   position: relative;
-  border: 1px solid var(--color-border-light);
+  border: 1px solid hsl(348 30% 90% / 0.75);
   box-shadow: var(--shadow-card);
-  transition: box-shadow var(--transition-base);
+  transition: transform var(--transition-spring), box-shadow var(--transition-spring), border-color var(--transition-base);
 }
 
 .progressCard:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+  border-color: hsl(348 40% 86% / 0.9);
 }
 
 .progressHeader {
@@ -121,7 +126,7 @@
 
 .weekUnit {
   font-family: var(--font-playful);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -137,6 +142,7 @@
   padding: 2px 10px;
   border-radius: var(--radius-full);
   width: fit-content;
+  border: 1px solid hsl(348 60% 88% / 0.6);
 }
 
 .progressBadges {
@@ -148,22 +154,28 @@
 
 .progressTrimester {
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  background-color: var(--color-bg-alt);
+  font-weight: 600;
+  background-color: hsl(0 0% 100% / 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   color: var(--color-text-secondary);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-border-light);
+  border: 1px solid hsl(348 20% 88% / 0.75);
 }
 
 .progressCountdown {
   font-family: var(--font-playful);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  background-color: hsl(32 75% 56% / 0.12);
-  color: hsl(32 75% 36%);
+  background-color: hsl(32 80% 94% / 0.9);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: hsl(32 80% 32%);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
+  border: 1px solid hsl(32 80% 85% / 0.8);
+  box-shadow: 0 1px 4px hsl(32 80% 50% / 0.1);
 }
 
 .progressBarWrapper {
@@ -171,19 +183,36 @@
 }
 
 .progressBarContainer {
-  background-color: var(--color-bg-alt);
+  background-color: hsl(30 20% 92%);
   border-radius: var(--radius-full);
-  height: 9px;
-  overflow: hidden;
+  height: 10px;
+  overflow: visible;
   position: relative;
+  box-shadow: inset 0 1px 3px hsl(0 0% 0% / 0.08);
 }
 
 .progressBarFill {
   height: 100%;
-  background: var(--color-primary);
+  background: linear-gradient(90deg, hsl(348 65% 58%), hsl(32 85% 62%));
   border-radius: var(--radius-full);
   transition: width 1s ease-out;
   animation: progressFill 1.5s ease-out;
+  box-shadow: 0 1px 6px hsl(348 65% 55% / 0.35);
+  position: relative;
+}
+
+.progressBarFill::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  border: 3px solid hsl(348 65% 55%);
+  box-shadow: 0 0 8px hsl(348 65% 55% / 0.65), 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: pulseGlow 2.5s ease-in-out infinite;
 }
 
 .progressFooter {
@@ -205,33 +234,42 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-5);
-  background-color: var(--color-bg);
+  background: hsl(30 25% 97% / 0.85);
   border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-base);
+  border: 1px solid hsl(348 30% 90% / 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  transition: all var(--transition-spring);
 }
 
 .milestoneBox:hover {
-  background-color: var(--color-surface-hover);
-  border-color: var(--color-primary-light);
+  background: hsl(0 0% 100% / 0.95);
+  border-color: hsl(348 55% 82%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px -2px hsl(348 40% 50% / 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .milestoneIcon {
   font-size: 2.25rem;
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(145deg, hsl(0 0% 100% / 0.98), hsl(348 60% 97% / 0.75));
+  border: 1px solid hsl(348 60% 90% / 0.85);
+  border-radius: 18px;
+  box-shadow:
+    0 4px 12px hsl(348 50% 50% / 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
   flex-shrink: 0;
-  transition: transform var(--transition-bounce);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-base);
 }
 
 .milestoneBox:hover .milestoneIcon {
-  transform: scale(1.15) rotate(6deg);
+  transform: scale(1.12) rotate(5deg);
+  box-shadow:
+    0 8px 18px hsl(348 50% 50% / 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
 }
 
 .milestoneContent {
@@ -293,16 +331,20 @@
 
 /* ─── Section card ─── */
 .section {
-  background-color: var(--color-surface);
+  background-color: hsl(0 0% 100% / 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-radius: var(--radius-xl);
   padding: var(--space-5);
-  border: 1px solid var(--color-border-light);
+  border: 1px solid hsl(348 30% 90% / 0.7);
   box-shadow: var(--shadow-card);
-  transition: box-shadow var(--transition-base);
+  transition: transform var(--transition-spring), box-shadow var(--transition-spring), border-color var(--transition-base);
 }
 
 .section:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px) scale(1.004);
+  border-color: hsl(348 40% 86% / 0.85);
 }
 
 .sectionHeader {
@@ -323,10 +365,10 @@
 }
 
 .sectionTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
   color: var(--color-text);
-  letter-spacing: var(--letter-spacing-wide);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -337,21 +379,25 @@
 }
 
 .headerAddBtn {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-full);
-  background-color: var(--color-primary-light);
+  background: linear-gradient(135deg, hsl(348 60% 96%), hsl(348 60% 90%));
   color: var(--color-primary);
+  border: 1px solid hsl(348 55% 85%);
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-spring);
+  box-shadow: 0 1px 3px hsl(348 50% 50% / 0.08);
 }
 
 .headerAddBtn:hover {
-  background-color: var(--color-primary);
+  background: linear-gradient(135deg, hsl(348 60% 55%), hsl(348 65% 46%));
   color: white;
-  transform: scale(1.08);
+  border-color: transparent;
+  transform: scale(1.12);
+  box-shadow: 0 4px 12px hsl(348 55% 52% / 0.35);
 }
 
 .headerViewAll {
@@ -454,14 +500,18 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
-  background-color: var(--color-bg);
+  padding: var(--space-3) var(--space-4);
+  background: hsl(30 25% 98% / 0.85);
+  border: 1px solid hsl(200 40% 90% / 0.65);
   border-radius: var(--radius-lg);
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-spring);
 }
 
 .appointmentItem:hover {
-  background-color: var(--color-surface-hover);
+  background: hsl(0 0% 100% / 0.95);
+  border-color: hsl(200 60% 80%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(200 60% 50% / 0.08);
 }
 
 .appointmentDot {
@@ -471,6 +521,7 @@
   background-color: var(--color-cat-appointment);
   margin-top: 6px;
   flex-shrink: 0;
+  box-shadow: 0 0 6px hsl(200 60% 50% / 0.4);
 }
 
 .appointmentInfo {
@@ -507,8 +558,17 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
-  background-color: var(--color-bg);
+  background: hsl(30 25% 98% / 0.85);
+  border: 1px solid hsl(150 30% 90% / 0.65);
   border-radius: var(--radius-md);
+  transition: all var(--transition-spring);
+}
+
+.medicineItem:hover {
+  background: hsl(0 0% 100% / 0.95);
+  border-color: hsl(150 50% 80%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(150 50% 50% / 0.08);
 }
 
 .medicinePill {
@@ -517,6 +577,7 @@
   border-radius: var(--radius-full);
   background-color: var(--color-cat-medicine);
   flex-shrink: 0;
+  box-shadow: 0 0 6px hsl(150 55% 45% / 0.35);
 }
 
 .medicineName {
@@ -546,25 +607,39 @@
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
-  transition: background-color var(--transition-fast);
+  border: 1px solid transparent;
+  transition: all var(--transition-spring);
   cursor: default;
 }
 
 .timelineItem:hover {
-  background-color: var(--color-bg);
+  background: hsl(0 0% 100% / 0.9);
+  border-color: hsl(348 30% 90% / 0.7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px hsl(348 40% 50% / 0.06);
 }
 
 .timelineIcon {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-lg);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.05rem;
   flex-shrink: 0;
+  background: linear-gradient(145deg, hsl(0 0% 100% / 0.95), hsl(348 50% 97% / 0.6));
+  border: 1px solid hsl(348 30% 90% / 0.7);
+  box-shadow:
+    0 2px 6px hsl(348 40% 50% / 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform var(--transition-spring);
+}
+
+.timelineItem:hover .timelineIcon {
+  transform: scale(1.08);
 }
 
 .timelineContent,
@@ -682,7 +757,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-4) var(--space-8);
-  background-color: var(--color-primary);
+  background: linear-gradient(135deg, hsl(348 60% 55%), hsl(348 65% 46%));
   color: white;
   border: none;
   border-radius: var(--radius-xl);
@@ -690,14 +765,35 @@
   font-weight: var(--font-weight-semibold);
   cursor: pointer;
   text-decoration: none;
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-  transition: all var(--transition-base);
+  box-shadow: 0 4px 16px hsl(348 55% 52% / 0.35), inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  transition: all var(--transition-spring);
+  position: relative;
+  overflow: hidden;
+}
+
+.setupButton::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(0 0% 100% / 0.28) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 600ms ease;
+  pointer-events: none;
+}
+
+.setupButton:hover::before {
+  transform: translateX(100%);
 }
 
 .setupButton:hover {
-  background-color: var(--color-primary-hover);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg), 0 0 30px hsl(340 65% 55% / 0.25);
+  background: linear-gradient(135deg, hsl(348 65% 58%), hsl(348 70% 48%));
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px hsl(348 65% 52% / 0.45), 0 0 32px hsl(340 65% 55% / 0.25), inset 0 1px 0 hsl(0 0% 100% / 0.4);
   color: white;
 }
 
@@ -755,6 +851,22 @@
   background: linear-gradient(90deg, var(--color-primary), hsl(280 75% 60%), hsl(45 90% 50%));
   border-radius: var(--radius-full);
   transition: width 1s ease-out;
+  box-shadow: 0 1px 8px hsl(340 75% 55% / 0.35);
+  position: relative;
+}
+
+.deliveredProgressBarFill::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background: #ffffff;
+  border: 3px solid hsl(280 75% 60%);
+  box-shadow: 0 0 8px hsl(280 75% 60% / 0.65), 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: pulseGlowDelivered 2.5s ease-in-out infinite;
 }
 
 .deliveredHandwritten {
