@@ -567,7 +567,8 @@
   flex-shrink: 0;
 }
 
-.timelineContent {
+.timelineContent,
+.timelineInfo {
   flex: 1;
   min-width: 0;
 }
@@ -968,6 +969,404 @@
   cursor: not-allowed;
 }
 
+/* ─── Postpartum Mode Switcher ─── */
+.modeSwitcher {
+  display: inline-flex;
+  background: var(--color-surface-secondary, hsl(28 35% 94%));
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-4);
+  gap: 4px;
+}
+
+.modeBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 18px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.modeBtn:hover {
+  color: var(--color-text);
+}
+
+.modeBtnActive {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.modeBadge {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: hsl(145 60% 90%);
+  color: hsl(145 70% 25%);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+}
+
+/* ─── Postpartum Hero Banner ─── */
+.postpartumHero {
+  background: linear-gradient(135deg, hsl(28 85% 97%) 0%, hsl(205 60% 97%) 100%);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-light);
+  margin-bottom: var(--space-6);
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.postpartumHeroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+}
+
+.babyProfileHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.babyAvatarBox {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-full);
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 4px 12px rgba(234, 115, 84, 0.15);
+  border: 2px solid white;
+}
+
+.babyDetailsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.babyNameHeading {
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.babyAgeTagline {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.babyAgeHighlight {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.heroPostpartumWeekBadge {
+  background: white;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: hsl(205 75% 40%);
+  border: 1px solid hsl(205 60% 88%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.postpartumGuideBox {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+
+.guideHeadlineRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.guideHeadline {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.guidePillAction {
+  font-size: 11px;
+  font-weight: 600;
+  background: hsl(35 85% 92%);
+  color: hsl(35 85% 30%);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.guideGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
+.guideItemLabel {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+/* ─── Baby Growth Card ─── */
+.growthKPIsRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.growthKPICard {
+  background: var(--color-surface-secondary, hsl(28 35% 96%));
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--color-border-light);
+}
+
+.growthKPILabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+}
+
+.growthKPIValue {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--color-text);
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.growthKPIUnit {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.growthKPIDelta {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: hsl(145 65% 35%);
+  margin-top: 2px;
+}
+
+/* ─── Vaccine Card ─── */
+.vaccineProgressHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.vaccineCountBadge {
+  font-weight: 600;
+  color: hsl(205 75% 35%);
+  background: hsl(205 70% 92%);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.vaccineNextBox {
+  background: linear-gradient(135deg, hsl(205 75% 96%), hsl(220 70% 97%));
+  border: 1px solid hsl(205 60% 88%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.vaccineNextTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: hsl(205 80% 25%);
+  margin-bottom: 2px;
+}
+
+.vaccineNextMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.vaccineDueTag {
+  font-weight: 600;
+  color: hsl(15 75% 45%);
+  background: hsl(15 80% 92%);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+}
+
+.vaccineMiniList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vaccineMiniItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-secondary, hsl(28 35% 96%));
+  font-size: var(--font-size-xs);
+}
+
+.vaccineMiniName {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.vaccineMiniAge {
+  color: var(--color-text-secondary);
+  font-size: 11px;
+}
+
+/* ─── Baby Firsts Showcase ─── */
+.milestonesGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.milestoneItemCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-secondary, hsl(28 35% 96%));
+  border: 1px solid var(--color-border-light);
+}
+
+.milestoneItemIcon {
+  font-size: 1.3rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: var(--radius-full);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.milestoneItemInfo {
+  flex: 1;
+}
+
+.milestoneItemTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.milestoneItemNotes {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.milestoneItemDate {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
+.milestoneUpcomingBanner {
+  background: linear-gradient(135deg, hsl(38 90% 95%), hsl(45 90% 96%));
+  border: 1px dashed hsl(38 80% 75%);
+  border-radius: var(--radius-lg);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-xs);
+  color: hsl(35 80% 25%);
+}
+
+.milestoneUpcomingText {
+  flex: 1;
+  line-height: 1.35;
+}
+
+.milestoneUpcomingStrong {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 1px;
+}
+
+/* ─── Mother Postpartum Health ─── */
+.motherHealthGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.motherHealthItem {
+  background: var(--color-surface-secondary, hsl(28 35% 96%));
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
   .sectionGrid {
@@ -986,4 +1385,17 @@
   .statsGrid {
     grid-template-columns: 1fr 1fr;
   }
+
+  .guideGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .growthKPIsRow {
+    grid-template-columns: 1fr;
+  }
+
+  .motherHealthGrid {
+    grid-template-columns: 1fr;
+  }
 }
+

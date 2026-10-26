@@ -10,6 +10,7 @@ import { SheetsService, resolveSpreadsheetId } from '@/lib/sheets';
 import { SHEET_HEADERS } from '@/lib/types';
 import { getDemoSheetRowById, updateDemoSheetRow } from '@/lib/demo-data';
 import { ServerCache } from '@/lib/cache';
+import { generateVaccineSchedule } from '@/lib/postpartum';
 
 export async function GET(
   _req: NextRequest,
@@ -106,6 +107,38 @@ export async function PUT(
     }
 
     await service.updateRow(tab, found.rowIndex, { ...found.data, ...body });
+
+    // Auto-seed vaccination calendar if delivery date was just set and vaccinations are empty
+    if (tab === 'Pregnancy' && body.delivery_date && body.delivery_date.trim() !== '') {
+      try {
+        const existingVaccines = await service.getRows('Vaccinations');
+        if (existingVaccines.length === 0) {
+          const defaultSchedule = generateVaccineSchedule(body.delivery_date);
+          const rowsToAppend = defaultSchedule.map((v) => ({
+            id: v.id,
+            vaccine_name: v.vaccineName,
+            dose_number: v.doseNumber,
+            target_disease: v.targetDisease,
+            recommended_age_str: v.recommendedAgeStr,
+            recommended_age_days: String(v.recommendedAgeDays),
+            due_date: v.dueDate,
+            status: v.status,
+            given_date: v.givenDate,
+            doctor_name: v.doctorName,
+            hospital: v.hospital,
+            batch_no: v.batchNo,
+            reactions: v.reactions,
+            cost: '',
+            notes: v.notes,
+            created_at: v.createdAt,
+          }));
+          await service.appendRows('Vaccinations', rowsToAppend);
+          ServerCache.invalidate(spreadsheetId, 'Vaccinations');
+        }
+      } catch (vacErr) {
+        console.warn('Could not auto-seed vaccinations:', vacErr);
+      }
+    }
 
     // Invalidate cached rows for this tab so subsequent reads fetch fresh data
     ServerCache.invalidate(spreadsheetId, tab);

@@ -70,6 +70,7 @@ export function getPregnancyInfo(
       babyAgeDays,
       babyAgeWeeks,
       babyAgeRemainingDays,
+      postpartumWeek: Math.floor(babyAgeDays / 7) + 1,
     };
   }
 

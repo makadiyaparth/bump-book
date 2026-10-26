@@ -5,6 +5,7 @@
    ============================================ */
 
 import { SHEET_TABS } from './types';
+import { generateVaccineSchedule } from './postpartum';
 
 // Helper to format Date as YYYY-MM-DD
 function formatDate(d: Date): string {
@@ -680,6 +681,185 @@ function getRawDemoSheetRows(tabName: string): Record<string, string>[] {
         { key: 'partner_name', value: 'Rohan Sharma' },
         { key: 'created_at', value: `${w4}T08:00:00.000Z` },
       ];
+
+    case SHEET_TABS.babyProfile: {
+      const birth = addDays(today, -65);
+      return [
+        {
+          id: 'demo-baby-001',
+          baby_name: 'Aarav Sharma',
+          gender: 'Boy',
+          birth_date: formatDate(birth),
+          birth_time: '08:42 AM',
+          birth_weight_grams: '3250',
+          birth_length_cm: '50.0',
+          birth_head_circumference_cm: '34.5',
+          delivery_type: 'Vaginal',
+          blood_group: 'B+',
+          pediatrician_name: 'Dr. Anand Rao, MD (Pediatrics)',
+          hospital_name: 'Cloudnine Hospital, Whitefield',
+          notes: 'A healthy baby boy born after a smooth labor. First cry loud and clear at birth.',
+          created_at: `${formatDate(birth)}T10:00:00.000Z`,
+          updated_at: `${formatDate(birth)}T10:00:00.000Z`,
+        },
+      ];
+    }
+
+    case SHEET_TABS.babyMilestones: {
+      const birth = addDays(today, -65);
+      return [
+        {
+          id: 'demo-bm-001',
+          milestone_key: 'first_cry',
+          title: 'First Cry',
+          category: 'Birth & Newborn',
+          achieved_date: formatDate(birth),
+          baby_age_days: '0',
+          baby_age_display: 'At Birth',
+          notes: 'Loud, robust cry right as the doctor placed him on mum’s chest. Tears of pure joy!',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(birth)}T09:00:00.000Z`,
+        },
+        {
+          id: 'demo-bm-002',
+          milestone_key: 'first_latch',
+          title: 'First Latch / Feed',
+          category: 'Birth & Newborn',
+          achieved_date: formatDate(birth),
+          baby_age_days: '0',
+          baby_age_display: 'Day 1',
+          notes: 'Latched on within the golden first hour with gentle guidance from the lactation nurse.',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(birth)}T10:30:00.000Z`,
+        },
+        {
+          id: 'demo-bm-003',
+          milestone_key: 'coming_home',
+          title: 'Coming Home from Hospital',
+          category: 'Birth & Newborn',
+          achieved_date: formatDate(addDays(birth, 3)),
+          baby_age_days: '3',
+          baby_age_display: '3 days old',
+          notes: 'Dressed in his little white onesie. Grandparents welcomed Aarav with traditional aarti.',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(addDays(birth, 3))}T14:00:00.000Z`,
+        },
+        {
+          id: 'demo-bm-004',
+          milestone_key: 'cord_stump_off',
+          title: 'Cord Stump Fell Off',
+          category: 'Birth & Newborn',
+          achieved_date: formatDate(addDays(birth, 9)),
+          baby_age_days: '9',
+          baby_age_display: '9 days old',
+          notes: 'Separated cleanly after a gentle sponge bath. Clean, cute little belly button!',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(addDays(birth, 9))}T11:00:00.000Z`,
+        },
+        {
+          id: 'demo-bm-005',
+          milestone_key: 'first_social_smile',
+          title: 'First Social Smile',
+          category: 'Speech & Social',
+          achieved_date: formatDate(addDays(birth, 44)),
+          baby_age_days: '44',
+          baby_age_display: '6 weeks old',
+          notes: 'Looked straight into Mum’s eyes while singing a lullaby and gave the sweetest full-face smile!',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(addDays(birth, 44))}T18:00:00.000Z`,
+        },
+        {
+          id: 'demo-bm-006',
+          milestone_key: 'tummy_head_lift',
+          title: 'Holding Head Up (Tummy Time)',
+          category: 'Motor & Physical',
+          achieved_date: formatDate(addDays(birth, 55)),
+          baby_age_days: '55',
+          baby_age_display: '7 weeks old',
+          notes: 'Lifted head up for nearly 45 seconds during morning tummy time mat play.',
+          drive_file_id: '',
+          drive_link: '',
+          created_at: `${formatDate(addDays(birth, 55))}T10:00:00.000Z`,
+        },
+      ];
+    }
+
+    case SHEET_TABS.childGrowth: {
+      const birth = addDays(today, -65);
+      return [
+        {
+          id: 'demo-cg-001',
+          recorded_date: formatDate(birth),
+          baby_age_days: '0',
+          weight_kg: '3.25',
+          length_cm: '50.0',
+          head_circumference_cm: '34.5',
+          notes: 'Birth measurement at Cloudnine labor ward.',
+          created_at: `${formatDate(birth)}T09:00:00.000Z`,
+        },
+        {
+          id: 'demo-cg-002',
+          recorded_date: formatDate(addDays(birth, 14)),
+          baby_age_days: '14',
+          weight_kg: '3.38',
+          length_cm: '51.2',
+          head_circumference_cm: '35.2',
+          notes: '2-week checkup. Regained birth weight plus 130g.',
+          created_at: `${formatDate(addDays(birth, 14))}T11:00:00.000Z`,
+        },
+        {
+          id: 'demo-cg-003',
+          recorded_date: formatDate(addDays(birth, 42)),
+          baby_age_days: '42',
+          weight_kg: '4.75',
+          length_cm: '55.5',
+          head_circumference_cm: '37.8',
+          notes: '6-week immunization checkup. Excellent weight velocity.',
+          created_at: `${formatDate(addDays(birth, 42))}T11:30:00.000Z`,
+        },
+        {
+          id: 'demo-cg-004',
+          recorded_date: formatDate(addDays(birth, 60)),
+          baby_age_days: '60',
+          weight_kg: '5.35',
+          length_cm: '57.8',
+          head_circumference_cm: '38.9',
+          notes: 'Home digital baby scale check.',
+          created_at: `${formatDate(addDays(birth, 60))}T09:00:00.000Z`,
+        },
+      ];
+    }
+
+    case SHEET_TABS.vaccinations: {
+      const birth = addDays(today, -65);
+      const schedule = generateVaccineSchedule(formatDate(birth));
+      return schedule.map((v) => {
+        const isGiven = v.recommendedAgeDays <= 42;
+        return {
+          id: v.id,
+          vaccine_name: v.vaccineName,
+          dose_number: v.doseNumber,
+          target_disease: v.targetDisease,
+          recommended_age_str: v.recommendedAgeStr,
+          recommended_age_days: String(v.recommendedAgeDays),
+          due_date: v.dueDate,
+          status: isGiven ? 'Given' : 'Scheduled',
+          given_date: isGiven ? v.dueDate : '',
+          doctor_name: isGiven ? 'Dr. Anand Rao' : '',
+          hospital: isGiven ? 'Cloudnine Hospital' : '',
+          batch_no: isGiven ? 'SERUM-IND-4481' : '',
+          reactions: isGiven ? (v.recommendedAgeDays === 42 ? 'Mild low-grade fever evening after injection, managed with paracetamol drops.' : 'None') : '',
+          cost: isGiven ? '1200' : '',
+          notes: isGiven ? 'Administered smoothly on thigh.' : 'Book appointment 1 week before due date.',
+          created_at: `${formatDate(birth)}T09:00:00.000Z`,
+        };
+      });
+    }
 
     default:
       return [];

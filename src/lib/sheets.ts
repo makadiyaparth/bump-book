@@ -57,40 +57,94 @@ export class SheetsService {
   }
 
   /**
-   * Read all rows from a tab, returning them as an array of objects.
+   * Ensure a tab exists with headers. If missing from an existing spreadsheet, creates it dynamically.
    */
-  async getRows(tab: string): Promise<Record<string, string>[]> {
-    const response = await this.sheets.spreadsheets.values.get({
-      spreadsheetId: this.spreadsheetId,
-      range: `${tab}!A:ZZ`,
-    });
+  async ensureTabExists(tab: string): Promise<void> {
+    const headers = SHEET_HEADERS[tab];
+    if (!headers) return;
 
-    const rows = response.data.values;
-    if (!rows || rows.length < 2) return [];
+    try {
+      const meta = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+        fields: 'sheets.properties.title',
+      });
+      const existingTitles = meta.data.sheets?.map((s) => s.properties?.title) || [];
+      if (existingTitles.includes(tab)) {
+        return; // Tab already exists
+      }
 
-    const headers = rows[0];
-    const schemaHeaders = SHEET_HEADERS[tab] || [];
-    const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title: tab,
+                },
+              },
+            },
+          ],
+        },
+      });
 
-    // Auto-update header row if new columns were added to schema (e.g. delivery_date)
-    if (headers.length < schemaHeaders.length) {
-      this.sheets.spreadsheets.values.update({
+      await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
         range: `${tab}!A1`,
         valueInputOption: 'RAW',
-        requestBody: { values: [schemaHeaders] },
-      }).catch((err) => {
-        console.warn(`Could not sync headers for tab ${tab}:`, err);
+        requestBody: {
+          values: [headers],
+        },
       });
+    } catch (err) {
+      console.warn(`Could not ensure tab "${tab}":`, err);
     }
+  }
 
-    return rows.slice(1).map((row) => {
-      const obj: Record<string, string> = {};
-      headerList.forEach((header: string, i: number) => {
-        obj[header] = row[i] || '';
+  /**
+   * Read all rows from a tab, returning them as an array of objects.
+   */
+  async getRows(tab: string): Promise<Record<string, string>[]> {
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A:ZZ`,
       });
-      return obj;
-    });
+
+      const rows = response.data.values;
+      if (!rows || rows.length < 2) return [];
+
+      const headers = rows[0];
+      const schemaHeaders = SHEET_HEADERS[tab] || [];
+      const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
+
+      // Auto-update header row if new columns were added to schema (e.g. delivery_date)
+      if (headers.length < schemaHeaders.length) {
+        this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `${tab}!A1`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [schemaHeaders] },
+        }).catch((err) => {
+          console.warn(`Could not sync headers for tab ${tab}:`, err);
+        });
+      }
+
+      return rows.slice(1).map((row) => {
+        const obj: Record<string, string> = {};
+        headerList.forEach((header: string, i: number) => {
+          obj[header] = row[i] || '';
+        });
+        return obj;
+      });
+    } catch (err: unknown) {
+      const errMsg = (err as Error)?.message || '';
+      if (errMsg.includes('Unable to parse range') || errMsg.includes('not found')) {
+        await this.ensureTabExists(tab);
+        return [];
+      }
+      throw err;
+    }
   }
 
   /**
@@ -102,12 +156,50 @@ export class SheetsService {
 
     const values = headers.map((header) => data[header] ?? '');
 
+    try {
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A:A`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [values],
+        },
+      });
+    } catch (err: unknown) {
+      const errMsg = (err as Error)?.message || '';
+      if (errMsg.includes('Unable to parse range') || errMsg.includes('not found')) {
+        await this.ensureTabExists(tab);
+        await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: `${tab}!A:A`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [values],
+          },
+        });
+        return;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Append multiple rows to a tab in a single request.
+   */
+  async appendRows(tab: string, dataList: Record<string, string>[]): Promise<void> {
+    if (dataList.length === 0) return;
+    const headers = SHEET_HEADERS[tab];
+    if (!headers) throw new Error(`Unknown tab: ${tab}`);
+
+    await this.ensureTabExists(tab);
+    const values = dataList.map((data) => headers.map((h) => data[h] ?? ''));
+
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: this.spreadsheetId,
       range: `${tab}!A:A`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        values: [values],
+        values,
       },
     });
   }

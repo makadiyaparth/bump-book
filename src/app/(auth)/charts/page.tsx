@@ -15,10 +15,11 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { TrendingUp, Heart, Activity, Baby } from 'lucide-react';
+import { TrendingUp, Heart, Activity, Baby, Sparkles, ShieldCheck } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
 import { useSheetData } from '@/lib/useSheetData';
+import { WHO_GROWTH_PERCENTILES_50TH, formatBabyAge } from '@/lib/postpartum';
 import styles from './page.module.css';
 
 ChartJS.register(
@@ -31,6 +32,11 @@ ChartJS.register(
   Legend,
   Filler
 );
+
+// Configure Chart.js global typography to match the design system (Inter)
+ChartJS.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+ChartJS.defaults.font.size = 11;
+ChartJS.defaults.color = 'hsl(240, 6%, 42%)';
 
 interface HealthRecord {
   id: string;
@@ -50,6 +56,16 @@ interface BabyRecord {
   fl: number | null;
 }
 
+interface ChildGrowthRecord {
+  id: string;
+  date: string;
+  ageDays: number;
+  weight: number | null;
+  length: number | null;
+  headCirc: number | null;
+  notes: string;
+}
+
 export default function ChartsPage() {
   const { data: session, status } = useSession();
   const [timeRange, setTimeRange] = useState<'all' | 't1' | 't2' | 't3'>('all');
@@ -57,24 +73,45 @@ export default function ChartsPage() {
   const { data: pregRows } = useSheetData('Pregnancy');
   const { data: healthRows, isLoading: healthLoading } = useSheetData('HealthStats');
   const { data: babyRows, isLoading: babyLoading } = useSheetData('BabyStats');
+  const { data: growthRows, isLoading: growthLoading } = useSheetData('ChildGrowth');
+  const { data: babyProfileRows } = useSheetData('BabyProfile');
 
-  const pregProfile = useMemo(() => {
-    return pregRows?.[0] || null;
-  }, [pregRows]);
-
+  const pregProfile = useMemo(() => pregRows?.[0] || null, [pregRows]);
   const lmpDate = pregProfile?.lmp_date || null;
   const deliveryDate = pregProfile?.delivery_date || null;
 
-  const deliveryGestation = useMemo(() => {
-    if (!deliveryDate || !lmpDate) return null;
-    const totalDays = Math.max(
-      0,
-      Math.floor((new Date(deliveryDate).getTime() - new Date(lmpDate).getTime()) / (24 * 60 * 60 * 1000))
-    );
-    const weeks = Math.floor(totalDays / 7);
-    const days = totalDays % 7;
-    return { weeks, days, totalDays };
-  }, [deliveryDate, lmpDate]);
+  const isDelivered = Boolean(deliveryDate && deliveryDate.trim() !== '');
+
+  const [activeTab, setActiveTab] = useState<'baby-growth' | 'mother-health' | 'pregnancy'>(
+    isDelivered ? 'baby-growth' : 'pregnancy'
+  );
+
+  const babyProfile = useMemo(() => {
+    if (!babyProfileRows || babyProfileRows.length === 0) return null;
+    const r = babyProfileRows[0];
+    return {
+      name: r.baby_name || 'Baby',
+      gender: r.gender || 'Boy',
+      birthWeight: r.birth_weight_grams ? Number(r.birth_weight_grams) : 3200,
+      birthLength: r.birth_length_cm ? Number(r.birth_length_cm) : 50,
+    };
+  }, [babyProfileRows]);
+
+  // Child Growth records
+  const childGrowthData = useMemo<ChildGrowthRecord[]>(() => {
+    if (!growthRows) return [];
+    return growthRows
+      .map((r) => ({
+        id: r.id,
+        date: r.recorded_date,
+        ageDays: Number(r.baby_age_days) || 0,
+        weight: r.weight_kg ? parseFloat(r.weight_kg) : null,
+        length: r.length_cm ? parseFloat(r.length_cm) : null,
+        headCirc: r.head_circumference_cm ? parseFloat(r.head_circumference_cm) : null,
+        notes: r.notes || '',
+      }))
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [growthRows]);
 
   const healthData = useMemo<HealthRecord[]>(() => {
     if (!healthRows) return [];
@@ -104,9 +141,9 @@ export default function ChartsPage() {
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [babyRows]);
 
-  const loading = (status === 'loading') || (healthLoading && !healthRows && babyLoading && !babyRows);
+  const loading = status === 'loading' || (healthLoading && !healthRows && babyLoading && !babyRows);
 
-  // Filter records by trimester
+  // Filter records by trimester for prenatal tab
   const filterByTrimester = useCallback(
     (recordsDate: string) => {
       if (timeRange === 'all' || !lmpDate) return true;
@@ -132,145 +169,233 @@ export default function ChartsPage() {
     [babyData, filterByTrimester]
   );
 
-  // Latest stats calculations
-  const latestWeight = healthData.filter((h) => h.weight !== null).slice(-1)[0];
-  const initialWeight = healthData.filter((h) => h.weight !== null)[0];
-  const weightDiff =
-    latestWeight?.weight && initialWeight?.weight
-      ? (latestWeight.weight - initialWeight.weight).toFixed(1)
-      : null;
+  // Growth Chart: Weight vs WHO 50th Percentile
+  const babyWeightChartData = useMemo(() => {
+    const valid = childGrowthData.filter((g) => g.weight !== null);
+    const labels = valid.map((g) => formatDateShort(g.date));
+    const actualWeights = valid.map((g) => g.weight);
 
-  const latestBP = healthData
-    .filter((h) => h.bpSystolic !== null && h.bpDiastolic !== null)
-    .slice(-1)[0];
-  const latestFHR = babyData.filter((b) => b.fhr !== null).slice(-1)[0];
-  const latestBabyWeight = babyData
-    .filter((b) => b.weight !== null)
-    .slice(-1)[0];
+    // Approximate WHO 50th percentile for these ages
+    const whoReferenceWeights = valid.map((g) => {
+      const match = WHO_GROWTH_PERCENTILES_50TH.find((w) => Math.abs(w.ageDays - g.ageDays) <= 25);
+      return match ? match.weightKg : null;
+    });
 
-  // 1. Weight Chart Data
-  const weightRecords = filteredHealth.filter((r) => r.weight !== null);
-  const weightChartData = {
-    labels: weightRecords.map((r) => formatDateShort(r.date)),
-    datasets: [
-      {
-        label: 'Weight (kg)',
-        data: weightRecords.map((r) => r.weight),
-        borderColor: 'hsl(340, 65%, 55%)',
-        backgroundColor: 'hsla(340, 65%, 55%, 0.12)',
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: 'hsl(340, 65%, 55%)',
-        pointRadius: 4,
-        pointHoverRadius: 6,
-      },
-    ],
-  };
+    return {
+      labels,
+      datasets: [
+        {
+          label: `${babyProfile?.name || 'Baby'} Weight (kg)`,
+          data: actualWeights,
+          borderColor: 'hsl(15, 80%, 55%)',
+          backgroundColor: 'hsla(15, 80%, 55%, 0.15)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: 'hsl(15, 80%, 55%)',
+        },
+        {
+          label: 'WHO 50th Percentile Standard (kg)',
+          data: whoReferenceWeights,
+          borderColor: 'hsl(205, 70%, 55%)',
+          backgroundColor: 'transparent',
+          borderDash: [6, 4],
+          fill: false,
+          tension: 0.35,
+          pointRadius: 3,
+          pointBackgroundColor: 'hsl(205, 70%, 55%)',
+        },
+      ],
+    };
+  }, [childGrowthData, babyProfile?.name]);
 
-  // 2. Blood Pressure Chart Data
-  const bpRecords = filteredHealth.filter(
-    (r) => r.bpSystolic !== null && r.bpDiastolic !== null
+  // Growth Chart: Length vs WHO
+  const babyLengthChartData = useMemo(() => {
+    const valid = childGrowthData.filter((g) => g.length !== null);
+    const labels = valid.map((g) => formatDateShort(g.date));
+    const actualLengths = valid.map((g) => g.length);
+    const whoReferenceLengths = valid.map((g) => {
+      const match = WHO_GROWTH_PERCENTILES_50TH.find((w) => Math.abs(w.ageDays - g.ageDays) <= 25);
+      return match ? match.lengthCm : null;
+    });
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: `${babyProfile?.name || 'Baby'} Length (cm)`,
+          data: actualLengths,
+          borderColor: 'hsl(145, 65%, 45%)',
+          backgroundColor: 'hsla(145, 65%, 45%, 0.15)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 5,
+        },
+        {
+          label: 'WHO 50th Percentile Standard (cm)',
+          data: whoReferenceLengths,
+          borderColor: 'hsl(205, 70%, 55%)',
+          borderDash: [6, 4],
+          fill: false,
+          tension: 0.35,
+          pointRadius: 3,
+        },
+      ],
+    };
+  }, [childGrowthData, babyProfile?.name]);
+
+  // Maternal Weight Chart
+  const weightRecords = useMemo(
+    () => filteredHealth.filter((r) => r.weight !== null),
+    [filteredHealth]
   );
-  const bpChartData = {
-    labels: bpRecords.map((r) => formatDateShort(r.date)),
-    datasets: [
-      {
-        label: 'Systolic (mmHg)',
-        data: bpRecords.map((r) => r.bpSystolic),
-        borderColor: 'hsl(0, 70%, 55%)',
-        backgroundColor: 'transparent',
-        tension: 0.3,
-        pointBackgroundColor: 'hsl(0, 70%, 55%)',
-        pointRadius: 4,
-      },
-      {
-        label: 'Diastolic (mmHg)',
-        data: bpRecords.map((r) => r.bpDiastolic),
-        borderColor: 'hsl(210, 70%, 55%)',
-        backgroundColor: 'transparent',
-        tension: 0.3,
-        pointBackgroundColor: 'hsl(210, 70%, 55%)',
-        pointRadius: 4,
-      },
-    ],
-  };
+  const weightChartData = useMemo(
+    () => ({
+      labels: weightRecords.map((r) => formatDateShort(r.date)),
+      datasets: [
+        {
+          label: 'Maternal Weight (kg)',
+          data: weightRecords.map((r) => r.weight),
+          borderColor: 'hsl(340, 65%, 55%)',
+          backgroundColor: 'hsla(340, 65%, 55%, 0.15)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: 'hsl(340, 65%, 55%)',
+        },
+      ],
+    }),
+    [weightRecords]
+  );
 
-  // 3. FHR Chart Data
-  const fhrRecords = filteredBaby.filter((r) => r.fhr !== null);
-  const fhrChartData = {
-    labels: fhrRecords.map((r) => formatDateShort(r.date)),
-    datasets: [
-      {
-        label: 'Heart Rate (bpm)',
-        data: fhrRecords.map((r) => r.fhr),
-        borderColor: 'hsl(260, 50%, 60%)',
-        backgroundColor: 'hsla(260, 50%, 60%, 0.12)',
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: 'hsl(260, 50%, 60%)',
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-    ],
-  };
+  // Blood Pressure Chart
+  const bpRecords = useMemo(
+    () => filteredHealth.filter((r) => r.bpSystolic !== null && r.bpDiastolic !== null),
+    [filteredHealth]
+  );
+  const bpChartData = useMemo(
+    () => ({
+      labels: bpRecords.map((r) => formatDateShort(r.date)),
+      datasets: [
+        {
+          label: 'Systolic (Target < 120)',
+          data: bpRecords.map((r) => r.bpSystolic),
+          borderColor: 'hsl(10, 75%, 60%)',
+          backgroundColor: 'transparent',
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: 'hsl(10, 75%, 60%)',
+        },
+        {
+          label: 'Diastolic (Target < 80)',
+          data: bpRecords.map((r) => r.bpDiastolic),
+          borderColor: 'hsl(200, 70%, 55%)',
+          backgroundColor: 'transparent',
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: 'hsl(200, 70%, 55%)',
+        },
+      ],
+    }),
+    [bpRecords]
+  );
 
-  // 4. Baby Growth Chart Data
-  const babyWeightRecords = filteredBaby.filter((r) => r.weight !== null);
-  const babyWeightChartData = {
-    labels: babyWeightRecords.map((r) => formatDateShort(r.date)),
-    datasets: [
-      {
-        label: 'Baby Weight (grams)',
-        data: babyWeightRecords.map((r) => r.weight),
-        borderColor: 'hsl(30, 80%, 55%)',
-        backgroundColor: 'hsla(30, 80%, 55%, 0.12)',
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: 'hsl(30, 80%, 55%)',
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-    ],
-  };
+  // Prenatal Fetal Heart Rate
+  const fhrRecords = useMemo(() => filteredBaby.filter((r) => r.fhr !== null), [filteredBaby]);
+  const fhrChartData = useMemo(
+    () => ({
+      labels: fhrRecords.map((r) => formatDateShort(r.date)),
+      datasets: [
+        {
+          label: 'Fetal Heart Rate (bpm)',
+          data: fhrRecords.map((r) => r.fhr),
+          borderColor: 'hsl(350, 75%, 60%)',
+          backgroundColor: 'hsla(350, 75%, 60%, 0.1)',
+          fill: true,
+          tension: 0.35,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          pointBackgroundColor: 'hsl(350, 75%, 60%)',
+        },
+      ],
+    }),
+    [fhrRecords]
+  );
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: true,
         position: 'top' as const,
         labels: {
-          boxWidth: 12,
-          font: { family: 'var(--font-sans), sans-serif', size: 12 },
+          boxWidth: 8,
+          boxHeight: 8,
+          usePointStyle: true,
+          padding: 12,
+          font: {
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            size: 10.5,
+            weight: 500,
+          },
+          color: 'hsl(25, 10%, 35%)',
         },
       },
       tooltip: {
-        backgroundColor: 'hsl(240, 10%, 15%)',
-        titleFont: { family: 'var(--font-sans), sans-serif', size: 12 },
-        bodyFont: { family: 'var(--font-sans), sans-serif', size: 13, weight: 'bold' as const },
+        backgroundColor: 'hsl(25, 20%, 98%)',
+        titleColor: 'hsl(25, 20%, 20%)',
+        titleFont: {
+          family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          size: 11,
+          weight: 600,
+        },
+        bodyColor: 'hsl(25, 15%, 40%)',
+        bodyFont: {
+          family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          size: 11,
+        },
+        borderColor: 'hsl(25, 15%, 85%)',
+        borderWidth: 1,
         padding: 10,
-        cornerRadius: 8,
+        boxPadding: 4,
       },
     },
     scales: {
       x: {
         grid: { display: false },
-        ticks: { font: { family: 'var(--font-sans), sans-serif', size: 11 } },
+        ticks: {
+          font: {
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            size: 10.5,
+          },
+          color: 'hsl(25, 10%, 50%)',
+        },
       },
       y: {
-        grid: { color: 'hsl(240, 10%, 94%)' },
-        ticks: { font: { family: 'var(--font-sans), sans-serif', size: 11 } },
+        grid: { color: 'hsl(25, 10%, 92%)' },
+        ticks: {
+          font: {
+            family: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            size: 10.5,
+          },
+          color: 'hsl(25, 10%, 50%)',
+        },
       },
     },
   };
+
+  const latestChildGrowth = childGrowthData[childGrowthData.length - 1];
 
   if (loading) {
     return (
       <div className={styles.chartsPage}>
         <JourneyLoader
-          message="Loading health insights & charts..."
-          subMessage="Plotting blood pressure, maternal weight, and baby growth"
+          message="Loading health insights & growth charts..."
+          subMessage="Plotting maternal vitals, infant growth, and WHO percentiles"
           cycle
           size="fullPage"
         />
@@ -287,30 +412,8 @@ export default function ChartsPage() {
             <p className={styles.chartsDiaryTag}>watching you grow day by day 🌱</p>
             <h1 className={styles.title}>Health & Growth Insights</h1>
             <p className={styles.subtitle}>
-              Monitor maternal health trends and baby development milestones
+              Monitor maternal recovery trends and baby growth curves against WHO benchmarks
             </p>
-            {deliveryDate && (
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  marginTop: 'var(--space-2)',
-                  padding: '4px 14px',
-                  background: 'hsl(340 85% 97%)',
-                  border: '1px solid hsl(340 70% 90%)',
-                  borderRadius: 'var(--radius-full)',
-                  fontSize: 'var(--font-size-xs)',
-                  color: 'hsl(340 70% 36%)',
-                  fontWeight: 600,
-                }}
-              >
-                <span>🍼 Delivered on {formatDateShort(deliveryDate)}</span>
-                {deliveryGestation && (
-                  <span>(Week {deliveryGestation.weeks} + {deliveryGestation.days}d)</span>
-                )}
-              </div>
-            )}
           </div>
           {session?.spreadsheetId && (
             <Link
@@ -328,199 +431,297 @@ export default function ChartsPage() {
               }}
               title="View or share live charts sheet in Google Sheets"
             >
-              <span>📊 Shareable Google Sheet Tab</span>
+              <span>📊 Google Sheets Live Tab</span>
             </Link>
           )}
         </div>
 
-        {/* Time Range Filter */}
-        <div className={styles.rangeFilter}>
+        {/* Category Tabs */}
+        <div className={styles.categoryTabBar}>
           <button
-            className={`${styles.rangePill} ${
-              timeRange === 'all' ? styles.rangePillActive : ''
-            }`}
-            onClick={() => setTimeRange('all')}
+            type="button"
+            className={`${styles.categoryTabBtn} ${activeTab === 'baby-growth' ? styles.categoryTabBtnActive : ''}`}
+            onClick={() => setActiveTab('baby-growth')}
           >
-            All Journey
+            <span>👶 Baby Growth (WHO)</span>
           </button>
           <button
-            className={`${styles.rangePill} ${
-              timeRange === 't1' ? styles.rangePillActive : ''
-            }`}
-            onClick={() => setTimeRange('t1')}
+            type="button"
+            className={`${styles.categoryTabBtn} ${activeTab === 'mother-health' ? styles.categoryTabBtnActive : ''}`}
+            onClick={() => setActiveTab('mother-health')}
           >
-            1st Trimester (W1-13)
+            <span>👩 Mum’s Vitals & BP</span>
           </button>
           <button
-            className={`${styles.rangePill} ${
-              timeRange === 't2' ? styles.rangePillActive : ''
-            }`}
-            onClick={() => setTimeRange('t2')}
+            type="button"
+            className={`${styles.categoryTabBtn} ${activeTab === 'pregnancy' ? styles.categoryTabBtnActive : ''}`}
+            onClick={() => setActiveTab('pregnancy')}
           >
-            2nd Trimester (W14-27)
-          </button>
-          <button
-            className={`${styles.rangePill} ${
-              timeRange === 't3' ? styles.rangePillActive : ''
-            }`}
-            onClick={() => setTimeRange('t3')}
-          >
-            3rd Trimester (W28+)
+            <span>🤰 Prenatal Scans & FHR</span>
           </button>
         </div>
       </div>
 
-      {/* Summary Highlight Cards */}
-      <div className={styles.statsSummaryGrid}>
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryIcon}>⚖️</div>
-          <div className={styles.summaryInfo}>
-            <span className={styles.summaryLabel}>Maternal Weight</span>
-            <span className={styles.summaryValue}>
-              {latestWeight?.weight ? `${latestWeight.weight} kg` : '—'}
-            </span>
-            {weightDiff !== null && (
-              <span className={styles.summaryDiff}>
-                {Number(weightDiff) >= 0 ? `+${weightDiff}` : weightDiff} kg net change
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryIcon}>❤️</div>
-          <div className={styles.summaryInfo}>
-            <span className={styles.summaryLabel}>Blood Pressure</span>
-            <span className={styles.summaryValue}>
-              {latestBP
-                ? `${latestBP.bpSystolic}/${latestBP.bpDiastolic}`
-                : '—'}
-            </span>
-            <span className={styles.summaryDiff}>
-              {latestBP ? 'mmHg' : 'No readings yet'}
-            </span>
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryIcon}>💓</div>
-          <div className={styles.summaryInfo}>
-            <span className={styles.summaryLabel}>Fetal Heart Rate</span>
-            <span className={styles.summaryValue}>
-              {latestFHR?.fhr ? `${latestFHR.fhr} bpm` : '—'}
-            </span>
-            <span className={styles.summaryDiff}>Normal: 110–160 bpm</span>
-          </div>
-        </div>
-
-        <div className={styles.summaryCard}>
-          <div className={styles.summaryIcon}>👶</div>
-          <div className={styles.summaryInfo}>
-            <span className={styles.summaryLabel}>Baby Weight</span>
-            <span className={styles.summaryValue}>
-              {latestBabyWeight?.weight
-                ? `${latestBabyWeight.weight} g`
-                : '—'}
-            </span>
-            <span className={styles.summaryDiff}>Latest estimated scan</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Charts Grid */}
-      <div className={styles.chartsGrid}>
-        {/* Chart 1: Weight Trend */}
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <div className={styles.chartTitleRow}>
-              <TrendingUp size={18} color="hsl(340, 65%, 55%)" />
-              <h2 className={styles.chartTitle}>Maternal Weight Trend</h2>
-            </div>
-            <span className={styles.chartBadge}>kg</span>
-          </div>
-          <div className={styles.chartCanvasWrapper}>
-            {weightRecords.length >= 2 ? (
-              <Line data={weightChartData} options={chartOptions} />
-            ) : (
-              <div className={styles.emptyChart}>
-                <p>Need at least 2 recorded measurements to graph trends.</p>
-                <Link href="/add/health-stats" className={styles.addLink}>
-                  + Record Health Measurement
-                </Link>
+      {/* ═══════════════════════════════════════════════════════════════════
+          TAB 1: BABY GROWTH (WHO Standard Curves)
+         ═══════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'baby-growth' && (
+        <>
+          {/* Summary KPIs */}
+          <div className={styles.statsSummaryGrid}>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>⚖️</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Latest Baby Weight</span>
+                <span className={styles.summaryValue}>
+                  {latestChildGrowth?.weight ? `${latestChildGrowth.weight} kg` : '—'}
+                </span>
+                {latestChildGrowth?.weight && babyProfile?.birthWeight && (
+                  <span className={styles.summaryDiff} style={{ color: 'hsl(145, 65%, 35%)', fontWeight: 600 }}>
+                    +{(latestChildGrowth.weight - babyProfile.birthWeight / 1000).toFixed(2)} kg since birth
+                  </span>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chart 2: Blood Pressure */}
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <div className={styles.chartTitleRow}>
-              <Activity size={18} color="hsl(0, 70%, 55%)" />
-              <h2 className={styles.chartTitle}>Blood Pressure Trend</h2>
             </div>
-            <span className={styles.chartBadge}>mmHg</span>
-          </div>
-          <div className={styles.chartCanvasWrapper}>
-            {bpRecords.length >= 2 ? (
-              <Line data={bpChartData} options={chartOptions} />
-            ) : (
-              <div className={styles.emptyChart}>
-                <p>Record your BP to see systolic/diastolic tracking.</p>
-                <Link href="/add/health-stats" className={styles.addLink}>
-                  + Record Health Measurement
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* Chart 3: Fetal Heart Rate */}
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <div className={styles.chartTitleRow}>
-              <Heart size={18} color="hsl(260, 50%, 60%)" />
-              <h2 className={styles.chartTitle}>Fetal Heart Rate (FHR)</h2>
-            </div>
-            <span className={styles.chartBadge}>bpm</span>
-          </div>
-          <div className={styles.chartCanvasWrapper}>
-            {fhrRecords.length >= 2 ? (
-              <Line data={fhrChartData} options={chartOptions} />
-            ) : (
-              <div className={styles.emptyChart}>
-                <p>Track your baby&apos;s heartbeat over scan visits.</p>
-                <Link href="/add/baby-stats" className={styles.addLink}>
-                  + Record Baby Measurement
-                </Link>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>📏</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Length / Height</span>
+                <span className={styles.summaryValue}>
+                  {latestChildGrowth?.length ? `${latestChildGrowth.length} cm` : '—'}
+                </span>
+                <span className={styles.summaryDiff}>
+                  {latestChildGrowth ? `${latestChildGrowth.length} cm tall` : 'No logs yet'}
+                </span>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        {/* Chart 4: Baby Growth */}
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <div className={styles.chartTitleRow}>
-              <Baby size={18} color="hsl(30, 80%, 55%)" />
-              <h2 className={styles.chartTitle}>Estimated Baby Weight</h2>
-            </div>
-            <span className={styles.chartBadge}>grams</span>
-          </div>
-          <div className={styles.chartCanvasWrapper}>
-            {babyWeightRecords.length >= 2 ? (
-              <Line data={babyWeightChartData} options={chartOptions} />
-            ) : (
-              <div className={styles.emptyChart}>
-                <p>Log ultrasound measurements to visualize growth.</p>
-                <Link href="/add/baby-stats" className={styles.addLink}>
-                  + Record Baby Measurement
-                </Link>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>🧠</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Head Circumference</span>
+                <span className={styles.summaryValue}>
+                  {latestChildGrowth?.headCirc ? `${latestChildGrowth.headCirc} cm` : '—'}
+                </span>
+                <span className={styles.summaryDiff}>Normal neurological growth</span>
               </div>
-            )}
+            </div>
+
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>🌟</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Growth Checkups</span>
+                <span className={styles.summaryValue}>{childGrowthData.length}</span>
+                <span className={styles.summaryDiff}>Measured data points</span>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+
+          {/* Charts Grid */}
+          <div className={styles.chartsGrid}>
+            {/* Chart 1: Baby Weight vs WHO */}
+            <div className={styles.chartCard}>
+              <div className={styles.chartHeader}>
+                <div className={styles.chartTitleRow}>
+                  <TrendingUp size={18} color="hsl(15, 80%, 55%)" />
+                  <h2 className={styles.chartTitle}>Baby Weight-for-Age vs WHO Standard</h2>
+                </div>
+                <span className={styles.chartBadge}>kg</span>
+              </div>
+              <div className={styles.chartCanvasWrapper}>
+                {childGrowthData.filter((g) => g.weight !== null).length >= 2 ? (
+                  <Line data={babyWeightChartData} options={chartOptions} />
+                ) : (
+                  <div className={styles.emptyChart}>
+                    <p>Log at least 2 baby growth measurements to view weight curve.</p>
+                    <Link href="/add/child-growth" className={styles.addLink}>
+                      + Log Baby Measurement
+                    </Link>
+                  </div>
+                )}
+              </div>
+              <div className={styles.chartFooter}>
+                <span>Solid orange line: Baby’s measured weight • Dashed blue: WHO 50th percentile median</span>
+              </div>
+            </div>
+
+            {/* Chart 2: Baby Length vs WHO */}
+            <div className={styles.chartCard}>
+              <div className={styles.chartHeader}>
+                <div className={styles.chartTitleRow}>
+                  <Baby size={18} color="hsl(145, 65%, 45%)" />
+                  <h2 className={styles.chartTitle}>Baby Length-for-Age vs WHO Standard</h2>
+                </div>
+                <span className={styles.chartBadge}>cm</span>
+              </div>
+              <div className={styles.chartCanvasWrapper}>
+                {childGrowthData.filter((g) => g.length !== null).length >= 2 ? (
+                  <Line data={babyLengthChartData} options={chartOptions} />
+                ) : (
+                  <div className={styles.emptyChart}>
+                    <p>Log at least 2 length measurements to plot length curve.</p>
+                    <Link href="/add/child-growth" className={styles.addLink}>
+                      + Log Baby Measurement
+                    </Link>
+                  </div>
+                )}
+              </div>
+              <div className={styles.chartFooter}>
+                <span>Solid green line: Baby’s measured length • Dashed blue: WHO 50th percentile median</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          TAB 2: MOTHER’S HEALTH & VITALS
+         ═══════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'mother-health' && (
+        <>
+          <div className={styles.statsSummaryGrid}>
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>⚖️</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Maternal Weight</span>
+                <span className={styles.summaryValue}>
+                  {weightRecords[weightRecords.length - 1]?.weight
+                    ? `${weightRecords[weightRecords.length - 1].weight} kg`
+                    : '—'}
+                </span>
+                <span className={styles.summaryDiff}>Latest health check</span>
+              </div>
+            </div>
+
+            <div className={styles.summaryCard}>
+              <div className={styles.summaryIcon}>❤️</div>
+              <div className={styles.summaryInfo}>
+                <span className={styles.summaryLabel}>Blood Pressure</span>
+                <span className={styles.summaryValue}>
+                  {bpRecords[bpRecords.length - 1]
+                    ? `${bpRecords[bpRecords.length - 1].bpSystolic}/${bpRecords[bpRecords.length - 1].bpDiastolic}`
+                    : '—'}
+                </span>
+                <span className={styles.summaryDiff}>Normal target: &lt; 120/80</span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.chartsGrid}>
+            {/* Maternal Weight */}
+            <div className={styles.chartCard}>
+              <div className={styles.chartHeader}>
+                <div className={styles.chartTitleRow}>
+                  <TrendingUp size={18} color="hsl(340, 65%, 55%)" />
+                  <h2 className={styles.chartTitle}>Maternal Weight Recovery Trajectory</h2>
+                </div>
+                <span className={styles.chartBadge}>kg</span>
+              </div>
+              <div className={styles.chartCanvasWrapper}>
+                {weightRecords.length >= 2 ? (
+                  <Line data={weightChartData} options={chartOptions} />
+                ) : (
+                  <div className={styles.emptyChart}>
+                    <p>Need at least 2 recorded measurements to graph weight trajectory.</p>
+                    <Link href="/add/health-stats" className={styles.addLink}>
+                      + Record Health Stats
+                    </Link>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Blood Pressure */}
+            <div className={styles.chartCard}>
+              <div className={styles.chartHeader}>
+                <div className={styles.chartTitleRow}>
+                  <Heart size={18} color="hsl(10, 75%, 60%)" />
+                  <h2 className={styles.chartTitle}>Blood Pressure Monitoring</h2>
+                </div>
+                <span className={styles.chartBadge}>mmHg</span>
+              </div>
+              <div className={styles.chartCanvasWrapper}>
+                {bpRecords.length >= 2 ? (
+                  <Line data={bpChartData} options={chartOptions} />
+                ) : (
+                  <div className={styles.emptyChart}>
+                    <p>Need at least 2 blood pressure logs to graph trends.</p>
+                    <Link href="/add/health-stats" className={styles.addLink}>
+                      + Record Blood Pressure
+                    </Link>
+                  </div>
+                )}
+              </div>
+              <div className={styles.chartFooter}>
+                <span>Red: Systolic (target &lt; 120) • Blue: Diastolic (target &lt; 80)</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════════════════
+          TAB 3: PRENATAL SCANS & ARCHIVES
+         ═══════════════════════════════════════════════════════════════════ */}
+      {activeTab === 'pregnancy' && (
+        <>
+          <div className={styles.rangeFilter}>
+            <button
+              className={`${styles.rangePill} ${timeRange === 'all' ? styles.rangePillActive : ''}`}
+              onClick={() => setTimeRange('all')}
+            >
+              All Pregnancy
+            </button>
+            <button
+              className={`${styles.rangePill} ${timeRange === 't1' ? styles.rangePillActive : ''}`}
+              onClick={() => setTimeRange('t1')}
+            >
+              1st Trimester (W1–13)
+            </button>
+            <button
+              className={`${styles.rangePill} ${timeRange === 't2' ? styles.rangePillActive : ''}`}
+              onClick={() => setTimeRange('t2')}
+            >
+              2nd Trimester (W14–27)
+            </button>
+            <button
+              className={`${styles.rangePill} ${timeRange === 't3' ? styles.rangePillActive : ''}`}
+              onClick={() => setTimeRange('t3')}
+            >
+              3rd Trimester (W28+)
+            </button>
+          </div>
+
+          <div className={styles.chartsGrid} style={{ marginTop: 'var(--space-5)' }}>
+            {/* Fetal Heart Rate */}
+            <div className={styles.chartCard}>
+              <div className={styles.chartHeader}>
+                <div className={styles.chartTitleRow}>
+                  <Activity size={18} color="hsl(350, 75%, 60%)" />
+                  <h2 className={styles.chartTitle}>Fetal Heart Rate (FHR)</h2>
+                </div>
+                <span className={styles.chartBadge}>bpm</span>
+              </div>
+              <div className={styles.chartCanvasWrapper}>
+                {fhrRecords.length >= 2 ? (
+                  <Line data={fhrChartData} options={chartOptions} />
+                ) : (
+                  <div className={styles.emptyChart}>
+                    <p>Need at least 2 FHR readings from checkups to graph.</p>
+                    <Link href="/add/baby-stats" className={styles.addLink}>
+                      + Record Baby Scan
+                    </Link>
+                  </div>
+                )}
+              </div>
+              <div className={styles.chartFooter}>
+                <span>Normal baseline range: 110–160 bpm</span>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
