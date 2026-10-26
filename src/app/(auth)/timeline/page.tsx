@@ -44,14 +44,29 @@ export default function TimelinePage() {
   const { data: appointmentsRows } = useSheetData('Appointments');
   const { data: milestonesRows } = useSheetData('Milestones');
   const { data: notesRows } = useSheetData('Notes');
+  const { data: babyMilestonesRows } = useSheetData('BabyMilestones');
+  const { data: vaccineRows } = useSheetData('Vaccinations');
+  const { data: childGrowthRows } = useSheetData('ChildGrowth');
 
-  const userLmp = useMemo(() => {
-    return pregRows?.[0]?.lmp_date || null;
+  const userPregnancy = useMemo(() => {
+    return pregRows?.[0] || null;
   }, [pregRows]);
+
+  const userLmp = userPregnancy?.lmp_date || null;
+  const userDelivery = userPregnancy?.delivery_date || null;
 
   const items = useMemo<TimelineItem[]>(() => {
     const calcWeek = (dateStr: string): string | undefined => {
       if (!userLmp || !dateStr) return undefined;
+      // If baby was delivered and this event is on or after delivery
+      if (userDelivery && dateStr >= userDelivery) {
+        const diffBirth = new Date(dateStr).getTime() - new Date(userDelivery).getTime();
+        const daysAfter = Math.floor(diffBirth / (24 * 60 * 60 * 1000));
+        if (daysAfter >= 0 && daysAfter < 365) {
+          return daysAfter === 0 ? 'Birth Day 🍼' : `Postpartum Day ${daysAfter}`;
+        }
+      }
+
       const diffMs = new Date(dateStr).getTime() - new Date(userLmp).getTime();
       const totalDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
       if (totalDays < 0 || totalDays > 300) return undefined;
@@ -217,6 +232,44 @@ export default function TimelinePage() {
       }
     }
 
+    // Injected Delivery Milestone if delivery_date is recorded in profile
+    if (userDelivery && userLmp) {
+      const alreadyHasDelivery = milestonesRows?.some(
+        (r) => r.milestone_type === 'Delivery' || r.milestone_date === userDelivery
+      );
+      if (!alreadyHasDelivery) {
+        const diffMs = new Date(userDelivery).getTime() - new Date(userLmp).getTime();
+        const totalDays = Math.max(0, Math.floor(diffMs / (24 * 60 * 60 * 1000)));
+        const weeks = Math.floor(totalDays / 7);
+        const days = totalDays % 7;
+        const dueDate = userPregnancy?.due_date;
+        let earlyLateTag = '';
+        if (dueDate) {
+          const diffFromDue = Math.floor(
+            (new Date(userDelivery).getTime() - new Date(dueDate).getTime()) /
+              (24 * 60 * 60 * 1000)
+          );
+          if (diffFromDue < 0) {
+            earlyLateTag = ` • ${Math.abs(diffFromDue)} days early`;
+          } else if (diffFromDue > 0) {
+            earlyLateTag = ` • ${diffFromDue} days past due date`;
+          }
+        }
+
+        timelineList.push({
+          id: 'profile-delivery-event',
+          date: userDelivery,
+          type: 'milestone',
+          typeLabel: 'Baby Delivery 🎉',
+          title: 'Baby Has Arrived! 🍼',
+          subtitle: `Delivered safely at Week ${weeks} + ${days}d${earlyLateTag}. Welcome to the world!`,
+          icon: '👶',
+          color: 'hsl(340, 80%, 55%)',
+          pregnancyWeek: `Week ${weeks} + ${days}d`,
+        });
+      }
+    }
+
     // Notes
     if (notesRows) {
       for (const r of notesRows) {
@@ -234,6 +287,66 @@ export default function TimelinePage() {
       }
     }
 
+    // Baby Milestones / Firsts
+    if (babyMilestonesRows) {
+      for (const r of babyMilestonesRows) {
+        timelineList.push({
+          id: r.id,
+          date: r.achieved_date,
+          type: 'baby-milestone',
+          typeLabel: 'Baby Milestone',
+          title: `${r.title} 🌟`,
+          subtitle: r.notes || r.category || 'Special baby moment',
+          icon: '🌟',
+          color: 'var(--color-cat-milestone)',
+          pregnancyWeek: r.baby_age_display || calcWeek(r.achieved_date),
+          driveLink: r.drive_link,
+        });
+      }
+    }
+
+    // Vaccinations
+    if (vaccineRows) {
+      for (const r of vaccineRows) {
+        if (r.status === 'Given' || r.given_date) {
+          const vDate = r.given_date || r.due_date;
+          timelineList.push({
+            id: r.id,
+            date: vDate,
+            type: 'vaccination',
+            typeLabel: 'Vaccination',
+            title: `${r.vaccine_name} ${r.dose_number ? `(${r.dose_number})` : ''}`,
+            subtitle: [r.target_disease, r.doctor_name, r.hospital].filter(Boolean).join(' • ') || 'Administered',
+            icon: '💉',
+            color: 'var(--color-cat-test)',
+            pregnancyWeek: calcWeek(vDate),
+            cost: r.cost,
+          });
+        }
+      }
+    }
+
+    // Child Growth
+    if (childGrowthRows) {
+      for (const r of childGrowthRows) {
+        const parts: string[] = [];
+        if (r.weight_kg) parts.push(`Weight ${r.weight_kg} kg`);
+        if (r.length_cm) parts.push(`Length ${r.length_cm} cm`);
+        if (r.head_circumference_cm) parts.push(`Head ${r.head_circumference_cm} cm`);
+        timelineList.push({
+          id: r.id,
+          date: r.recorded_date,
+          type: 'child-growth',
+          typeLabel: 'Baby Growth',
+          title: `Baby Growth — ${r.weight_kg ? `${r.weight_kg} kg` : ''} ${r.length_cm ? `• ${r.length_cm} cm` : ''}`,
+          subtitle: parts.join(' • ') || r.notes || 'Recorded baby growth',
+          icon: '📏',
+          color: 'var(--color-cat-baby)',
+          pregnancyWeek: calcWeek(r.recorded_date),
+        });
+      }
+    }
+
     timelineList.sort((a, b) => {
       const dateA = a.date ? new Date(a.date).getTime() : 0;
       const dateB = b.date ? new Date(b.date).getTime() : 0;
@@ -243,6 +356,8 @@ export default function TimelinePage() {
     return timelineList;
   }, [
     userLmp,
+    userDelivery,
+    userPregnancy,
     doctorVisitsRows,
     medicinesRows,
     testsRows,
@@ -251,6 +366,9 @@ export default function TimelinePage() {
     appointmentsRows,
     milestonesRows,
     notesRows,
+    babyMilestonesRows,
+    vaccineRows,
+    childGrowthRows,
   ]);
 
   const loading = (status === 'loading') || (pregLoading && !pregRows && visitsLoading && !doctorVisitsRows);

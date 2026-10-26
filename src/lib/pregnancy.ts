@@ -5,14 +5,74 @@
 import type { PregnancyInfo } from './types';
 
 /**
- * Calculate pregnancy information from LMP date.
- * Standard pregnancy is 280 days (40 weeks) from LMP.
+ * Calculate pregnancy information from LMP date and optional delivery date.
+ * If delivery has occurred (e.g. before expected due date), calculates gestation
+ * up to delivery date and postpartum duration.
  */
-export function getPregnancyInfo(lmpDateStr: string): PregnancyInfo {
+export function getPregnancyInfo(
+  lmpDateStr: string,
+  deliveryDateStr?: string | null
+): PregnancyInfo {
   const lmpDate = new Date(lmpDateStr);
   const now = new Date();
   const dueDate = new Date(lmpDate);
   dueDate.setDate(dueDate.getDate() + 280); // 40 weeks
+
+  const isDelivered = Boolean(deliveryDateStr && deliveryDateStr.trim() !== '');
+  const deliveryDate = isDelivered ? new Date(deliveryDateStr!) : null;
+
+  if (isDelivered && deliveryDate && !isNaN(deliveryDate.getTime())) {
+    // Gestation duration up to the moment of delivery
+    const totalDaysToDelivery = Math.max(
+      0,
+      Math.floor((deliveryDate.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24))
+    );
+    const deliveryWeek = Math.floor(totalDaysToDelivery / 7);
+    const deliveryDay = totalDaysToDelivery % 7;
+
+    // Difference between delivery date and expected due date (in days)
+    // Negative = delivered early (e.g. -21 is 21 days early)
+    // Positive = delivered late / post-dates
+    const daysEarlyOrLate = Math.floor(
+      (deliveryDate.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Baby's age today
+    const babyAgeDays = Math.max(
+      0,
+      Math.floor((now.getTime() - deliveryDate.getTime()) / (1000 * 60 * 60 * 24))
+    );
+    const babyAgeWeeks = Math.floor(babyAgeDays / 7);
+    const babyAgeRemainingDays = babyAgeDays % 7;
+
+    let trimester: 1 | 2 | 3;
+    if (deliveryWeek < 13) {
+      trimester = 1;
+    } else if (deliveryWeek < 27) {
+      trimester = 2;
+    } else {
+      trimester = 3;
+    }
+
+    return {
+      currentWeek: deliveryWeek,
+      currentDay: deliveryDay,
+      totalDays: totalDaysToDelivery,
+      daysRemaining: 0,
+      trimester,
+      progressPercent: 100, // Delivered = complete journey
+      dueDate,
+      isDelivered: true,
+      deliveryDate,
+      deliveryWeek,
+      deliveryDay,
+      daysEarlyOrLate,
+      babyAgeDays,
+      babyAgeWeeks,
+      babyAgeRemainingDays,
+      postpartumWeek: Math.floor(babyAgeDays / 7) + 1,
+    };
+  }
 
   const totalDays = Math.floor(
     (now.getTime() - lmpDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -45,6 +105,8 @@ export function getPregnancyInfo(lmpDateStr: string): PregnancyInfo {
     trimester,
     progressPercent,
     dueDate,
+    isDelivered: false,
+    deliveryDate: null,
   };
 }
 

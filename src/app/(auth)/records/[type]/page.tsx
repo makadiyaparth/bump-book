@@ -146,6 +146,10 @@ export default function RecordTypeListPage({
         <div className={styles.cardsList}>
           {filteredRecords.map((r) => {
             const dateStr =
+              r.achieved_date ||
+              r.given_date ||
+              r.due_date ||
+              r.birth_date ||
               r.visit_date ||
               r.test_date ||
               r.recorded_date ||
@@ -156,13 +160,17 @@ export default function RecordTypeListPage({
               '';
 
             const title =
-              r.medicine_name ||
-              r.test_name ||
-              (r.doctor_name ? `Dr. ${r.doctor_name}` : null) ||
-              r.purpose ||
-              r.milestone_type ||
-              r.title ||
-              recordType.label;
+              r.vaccine_name
+                ? `${r.vaccine_name} ${r.dose_number ? `(${r.dose_number})` : ''}`
+                : r.baby_name
+                ? `${r.baby_name} (Baby Profile)`
+                : r.medicine_name ||
+                  r.test_name ||
+                  (r.doctor_name ? `Dr. ${r.doctor_name}` : null) ||
+                  r.purpose ||
+                  r.milestone_type ||
+                  r.title ||
+                  recordType.label;
 
             return (
               <Link
@@ -445,6 +453,154 @@ function renderCardSummary(type: string, r: Record<string, string>) {
                 {r.content.slice(0, 80)}
                 {r.content.length > 80 ? '...' : ''}
               </span>
+            </div>
+          )}
+        </>
+      );
+
+    case 'vaccination':
+      return (
+        <>
+          {r.status && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Status</span>
+              <span
+                className={`${styles.badge} ${
+                  r.status === 'Given'
+                    ? styles.badgeSuccess
+                    : r.status === 'Scheduled'
+                    ? styles.badgeInfo
+                    : styles.badgeWarning
+                }`}
+              >
+                {r.status}
+              </span>
+            </div>
+          )}
+          {r.recommended_age_str && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Recommended Age</span>
+              <span className={styles.detailValue}>{r.recommended_age_str}</span>
+            </div>
+          )}
+          {r.target_disease && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Target Disease</span>
+              <span className={styles.detailValue}>{r.target_disease}</span>
+            </div>
+          )}
+          {r.doctor_name && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Pediatrician</span>
+              <span className={styles.detailValue}>{r.doctor_name}</span>
+            </div>
+          )}
+          {r.batch_no && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Batch No</span>
+              <span className={styles.detailValue}>{r.batch_no}</span>
+            </div>
+          )}
+          {r.cost && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Cost</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-success)', fontWeight: 600 }}>
+                {formatCurrency(r.cost)}
+              </span>
+            </div>
+          )}
+        </>
+      );
+
+    case 'baby-milestone':
+      return (
+        <>
+          {r.category && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Category</span>
+              <span className={styles.detailValue}>{r.category}</span>
+            </div>
+          )}
+          {r.baby_age_display && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Baby Age</span>
+              <span className={styles.detailValue}>{r.baby_age_display}</span>
+            </div>
+          )}
+          {r.notes && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Memory</span>
+              <span className={styles.detailValue}>{r.notes}</span>
+            </div>
+          )}
+          {r.drive_link && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Keepsake Photo</span>
+              <span className={styles.detailValue} style={{ color: 'var(--color-primary)' }}>
+                View in Google Drive 📷
+              </span>
+            </div>
+          )}
+        </>
+      );
+
+    case 'child-growth':
+      return (
+        <>
+          {r.weight_kg && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Weight</span>
+              <span className={styles.detailValue} style={{ fontWeight: 700 }}>
+                {r.weight_kg} kg
+              </span>
+            </div>
+          )}
+          {r.length_cm && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Length</span>
+              <span className={styles.detailValue}>{r.length_cm} cm</span>
+            </div>
+          )}
+          {r.head_circumference_cm && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Head Circ</span>
+              <span className={styles.detailValue}>{r.head_circumference_cm} cm</span>
+            </div>
+          )}
+          {r.notes && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Notes</span>
+              <span className={styles.detailValue}>{r.notes}</span>
+            </div>
+          )}
+        </>
+      );
+
+    case 'baby-profile':
+      return (
+        <>
+          {r.gender && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Gender</span>
+              <span className={styles.detailValue}>{r.gender}</span>
+            </div>
+          )}
+          {r.birth_weight_grams && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Birth Weight</span>
+              <span className={styles.detailValue}>{r.birth_weight_grams} g</span>
+            </div>
+          )}
+          {r.birth_length_cm && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Birth Length</span>
+              <span className={styles.detailValue}>{r.birth_length_cm} cm</span>
+            </div>
+          )}
+          {r.pediatrician_name && (
+            <div className={styles.detailItem}>
+              <span className={styles.detailLabel}>Pediatrician</span>
+              <span className={styles.detailValue}>{r.pediatrician_name}</span>
             </div>
           )}
         </>

@@ -24,11 +24,11 @@ export function today(): string {
 }
 
 /**
- * Format a date string to a human-readable format.
+ * Format a date string or Date object to a human-readable format.
  * e.g. "Sep 24, 2026"
  */
-export function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
+export function formatDate(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -37,11 +37,11 @@ export function formatDate(dateStr: string): string {
 }
 
 /**
- * Format a date string to short format.
+ * Format a date string or Date object to short format.
  * e.g. "Sep 24"
  */
-export function formatDateShort(dateStr: string): string {
-  const date = new Date(dateStr);
+export function formatDateShort(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -49,11 +49,11 @@ export function formatDateShort(dateStr: string): string {
 }
 
 /**
- * Format a date string to relative time.
+ * Format a date string or Date object to relative time.
  * e.g. "Today", "Yesterday", "3 days ago", "Sep 20"
  */
-export function formatRelativeDate(dateStr: string): string {
-  const date = new Date(dateStr);
+export function formatRelativeDate(dateInput: string | Date): string {
+  const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -61,7 +61,7 @@ export function formatRelativeDate(dateStr: string): string {
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays} days ago`;
-  return formatDateShort(dateStr);
+  return formatDateShort(date);
 }
 
 /**

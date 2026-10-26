@@ -57,27 +57,94 @@ export class SheetsService {
   }
 
   /**
+   * Ensure a tab exists with headers. If missing from an existing spreadsheet, creates it dynamically.
+   */
+  async ensureTabExists(tab: string): Promise<void> {
+    const headers = SHEET_HEADERS[tab];
+    if (!headers) return;
+
+    try {
+      const meta = await this.sheets.spreadsheets.get({
+        spreadsheetId: this.spreadsheetId,
+        fields: 'sheets.properties.title',
+      });
+      const existingTitles = meta.data.sheets?.map((s) => s.properties?.title) || [];
+      if (existingTitles.includes(tab)) {
+        return; // Tab already exists
+      }
+
+      await this.sheets.spreadsheets.batchUpdate({
+        spreadsheetId: this.spreadsheetId,
+        requestBody: {
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title: tab,
+                },
+              },
+            },
+          ],
+        },
+      });
+
+      await this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A1`,
+        valueInputOption: 'RAW',
+        requestBody: {
+          values: [headers],
+        },
+      });
+    } catch (err) {
+      console.warn(`Could not ensure tab "${tab}":`, err);
+    }
+  }
+
+  /**
    * Read all rows from a tab, returning them as an array of objects.
    */
   async getRows(tab: string): Promise<Record<string, string>[]> {
-    const response = await this.sheets.spreadsheets.values.get({
-      spreadsheetId: this.spreadsheetId,
-      range: `${tab}!A:ZZ`,
-    });
-
-    const rows = response.data.values;
-    if (!rows || rows.length < 2) return [];
-
-    const headers = rows[0];
-    const schemaHeaders = SHEET_HEADERS[tab] || [];
-    const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
-    return rows.slice(1).map((row) => {
-      const obj: Record<string, string> = {};
-      headerList.forEach((header: string, i: number) => {
-        obj[header] = row[i] || '';
+    try {
+      const response = await this.sheets.spreadsheets.values.get({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A:ZZ`,
       });
-      return obj;
-    });
+
+      const rows = response.data.values;
+      if (!rows || rows.length < 2) return [];
+
+      const headers = rows[0];
+      const schemaHeaders = SHEET_HEADERS[tab] || [];
+      const headerList = headers.length >= schemaHeaders.length ? headers : schemaHeaders;
+
+      // Auto-update header row if new columns were added to schema (e.g. delivery_date)
+      if (headers.length < schemaHeaders.length) {
+        this.sheets.spreadsheets.values.update({
+          spreadsheetId: this.spreadsheetId,
+          range: `${tab}!A1`,
+          valueInputOption: 'RAW',
+          requestBody: { values: [schemaHeaders] },
+        }).catch((err) => {
+          console.warn(`Could not sync headers for tab ${tab}:`, err);
+        });
+      }
+
+      return rows.slice(1).map((row) => {
+        const obj: Record<string, string> = {};
+        headerList.forEach((header: string, i: number) => {
+          obj[header] = row[i] || '';
+        });
+        return obj;
+      });
+    } catch (err: unknown) {
+      const errMsg = (err as Error)?.message || '';
+      if (errMsg.includes('Unable to parse range') || errMsg.includes('not found')) {
+        await this.ensureTabExists(tab);
+        return [];
+      }
+      throw err;
+    }
   }
 
   /**
@@ -89,12 +156,50 @@ export class SheetsService {
 
     const values = headers.map((header) => data[header] ?? '');
 
+    try {
+      await this.sheets.spreadsheets.values.append({
+        spreadsheetId: this.spreadsheetId,
+        range: `${tab}!A:A`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [values],
+        },
+      });
+    } catch (err: unknown) {
+      const errMsg = (err as Error)?.message || '';
+      if (errMsg.includes('Unable to parse range') || errMsg.includes('not found')) {
+        await this.ensureTabExists(tab);
+        await this.sheets.spreadsheets.values.append({
+          spreadsheetId: this.spreadsheetId,
+          range: `${tab}!A:A`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [values],
+          },
+        });
+        return;
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Append multiple rows to a tab in a single request.
+   */
+  async appendRows(tab: string, dataList: Record<string, string>[]): Promise<void> {
+    if (dataList.length === 0) return;
+    const headers = SHEET_HEADERS[tab];
+    if (!headers) throw new Error(`Unknown tab: ${tab}`);
+
+    await this.ensureTabExists(tab);
+    const values = dataList.map((data) => headers.map((h) => data[h] ?? ''));
+
     await this.sheets.spreadsheets.values.append({
       spreadsheetId: this.spreadsheetId,
       range: `${tab}!A:A`,
       valueInputOption: 'USER_ENTERED',
       requestBody: {
-        values: [values],
+        values,
       },
     });
   }
@@ -358,9 +463,9 @@ export class SheetsService {
       [],
       // Row 4: KPI Card Headers
       [
-        'CURRENT GESTATION',
+        '=IF(ISBLANK(Pregnancy!O2), "CURRENT GESTATION", "GESTATION AT DELIVERY")',
         '',
-        'ESTIMATED DUE DATE',
+        '=IF(ISBLANK(Pregnancy!O2), "ESTIMATED DUE DATE", "DELIVERY DATE & STATUS")',
         '',
         'LATEST MATERNAL VITALS',
         '',
@@ -368,9 +473,9 @@ export class SheetsService {
       ],
       // Row 5: KPI Card Formulas
       [
-        '="Week " & IFERROR(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(TODAY() - DATEVALUE(Pregnancy!B2)), 7), "--") & " days"',
+        '=IF(ISBLANK(Pregnancy!O2), "Week " & IFERROR(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(TODAY() - DATEVALUE(Pregnancy!B2)), 7), "--") & " days", "Delivered: Week " & IFERROR(INT((DATEVALUE(Pregnancy!O2) - DATEVALUE(Pregnancy!B2))/7), "--") & " + " & IFERROR(MOD(INT(DATEVALUE(Pregnancy!O2) - DATEVALUE(Pregnancy!B2)), 7), "--") & " days")',
         '',
-        '="Due: " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " (" & IFERROR(DATEVALUE(Pregnancy!C2) - TODAY(), "--") & " days left)"',
+        '=IF(ISBLANK(Pregnancy!O2), "Due: " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " (" & IFERROR(DATEVALUE(Pregnancy!C2) - TODAY(), "--") & " days left)", "Born: " & IFERROR(TEXT(DATEVALUE(Pregnancy!O2), "dd mmm yyyy"), Pregnancy!O2) & " (" & IFERROR(INT(TODAY() - DATEVALUE(Pregnancy!O2)), 0) & " days old)")',
         '',
         '="BP: " & IFERROR(INDEX(FILTER(HealthStats!D2:D & "/" & HealthStats!E2:E, HealthStats!D2:D<>""), ROWS(FILTER(HealthStats!D2:D, HealthStats!D2:D<>""))), "--") & " mmHg • Wt: " & IFERROR(INDEX(FILTER(HealthStats!C2:C, HealthStats!C2:C<>""), ROWS(FILTER(HealthStats!C2:C, HealthStats!C2:C<>""))), "--") & " kg"',
         '',
@@ -378,9 +483,9 @@ export class SheetsService {
       ],
       // Row 6: KPI Card Details
       [
-        '="Trimester: " & IFERROR(IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 13, "1st Trimester", IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 28, "2nd Trimester", "3rd Trimester")), "--")',
+        '=IF(ISBLANK(Pregnancy!O2), "Trimester: " & IFERROR(IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 13, "1st Trimester", IF(INT((TODAY() - DATEVALUE(Pregnancy!B2))/7) < 28, "2nd Trimester", "3rd Trimester")), "--"), "Status: Baby Arrived! 🎉")',
         '',
-        '="Type: " & Pregnancy!F2 & " • Blood: " & Pregnancy!D2 & " " & Pregnancy!E2',
+        '=IF(ISBLANK(Pregnancy!O2), "Type: " & Pregnancy!F2 & " • Blood: " & Pregnancy!D2 & " " & Pregnancy!E2, "Due was " & IFERROR(TEXT(DATEVALUE(Pregnancy!C2), "dd mmm yyyy"), Pregnancy!C2) & " • " & Pregnancy!F2)',
         '',
         '="Doctor: " & Pregnancy!K2 & " (" & Pregnancy!L2 & ")"',
         '',

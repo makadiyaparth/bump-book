@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { ArrowLeft, Check, UploadCloud, Paperclip, X } from 'lucide-react';
 import { generateId, now, today } from '@/lib/utils';
-import { RECORD_TYPES, MILESTONE_TYPES } from '@/lib/types';
+import { RECORD_TYPES, MILESTONE_TYPES, BABY_MILESTONE_CATALOG } from '@/lib/types';
 import type { RecordType } from '@/lib/types';
+import { STANDARD_VACCINE_SCHEDULE } from '@/lib/postpartum';
 import { invalidateSheetTab } from '@/lib/useSheetData';
 import formStyles from '@/styles/forms.module.css';
 
@@ -1024,6 +1025,417 @@ function renderFields(
               id="notes"
               value={data.notes || ''}
               onChange={(e) => update('notes', e.target.value)}
+            />
+          </div>
+        </>
+      );
+
+    case 'baby-milestone':
+      return (
+        <>
+          <div className={formStyles.field}>
+            <label htmlFor="milestone-key">Milestone / First *</label>
+            <select
+              id="milestone-key"
+              value={data.milestone_key || ''}
+              onChange={(e) => {
+                const selected = BABY_MILESTONE_CATALOG.find((m) => m.key === e.target.value);
+                update('milestone_key', e.target.value);
+                if (selected) {
+                  update('title', selected.title);
+                  update('category', selected.category);
+                  if (selected.expectedAgeDisplay && !data.baby_age_display) {
+                    update('baby_age_display', selected.expectedAgeDisplay);
+                  }
+                }
+              }}
+            >
+              <option value="">Select a baby milestone</option>
+              {BABY_MILESTONE_CATALOG.map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.icon} {m.title} ({m.expectedAgeDisplay})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {data.milestone_key === 'custom' && (
+            <div className={formStyles.field}>
+              <label htmlFor="custom-title">Milestone Title *</label>
+              <input
+                id="custom-title"
+                type="text"
+                placeholder="e.g. First time in swimming pool"
+                value={data.title || ''}
+                onChange={(e) => update('title', e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="achieved-date">Date Achieved *</label>
+              <input
+                id="achieved-date"
+                type="date"
+                value={data.achieved_date || todayStr}
+                onChange={(e) => update('achieved_date', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="baby-age">Baby Age Display</label>
+              <input
+                id="baby-age"
+                type="text"
+                placeholder="e.g. 6 weeks, 2 months"
+                value={data.baby_age_display || ''}
+                onChange={(e) => update('baby_age_display', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="notes">Parent’s Reflections & Memories</label>
+            <textarea
+              id="notes"
+              value={data.notes || ''}
+              onChange={(e) => update('notes', e.target.value)}
+              placeholder="How did baby react? What made this moment unforgettable?"
+            />
+          </div>
+
+          <div className={formStyles.field}>
+            <label>Milestone Photo (Optional Drive Upload)</label>
+            {data.drive_link ? (
+              <div className={formStyles.uploadedFileBadge}>
+                <Paperclip size={14} />
+                <span>{uploadProps.uploadedFileName || 'Photo uploaded'}</span>
+                <button
+                  type="button"
+                  onClick={uploadProps.removeFile}
+                  className={formStyles.removeFileBtn}
+                  aria-label="Remove photo"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <label className={formStyles.uploadBox}>
+                <UploadCloud size={24} />
+                <span className={formStyles.uploadText}>
+                  {uploadProps.uploading ? 'Uploading to Drive...' : 'Upload keepsake photo'}
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={uploadProps.handleFileUpload}
+                  style={{ display: 'none' }}
+                  disabled={uploadProps.uploading}
+                />
+              </label>
+            )}
+          </div>
+        </>
+      );
+
+    case 'vaccination':
+      return (
+        <>
+          <div className={formStyles.field}>
+            <label htmlFor="vaccine-preset">Quick Pick Standard Vaccine</label>
+            <select
+              id="vaccine-preset"
+              value=""
+              onChange={(e) => {
+                const selected = STANDARD_VACCINE_SCHEDULE.find((v) => v.name === e.target.value);
+                if (selected) {
+                  update('vaccine_name', selected.name);
+                  update('dose_number', selected.dose);
+                  update('target_disease', selected.targetDisease);
+                  update('recommended_age_str', selected.recommendedAgeStr);
+                  update('recommended_age_days', String(selected.recommendedAgeDays));
+                }
+              }}
+            >
+              <option value="">Choose from standard schedule (or type below)...</option>
+              {STANDARD_VACCINE_SCHEDULE.map((s, idx) => (
+                <option key={idx} value={s.name}>
+                  {s.name} ({s.dose}) — {s.recommendedAgeStr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="vaccine-name">Vaccine Name *</label>
+              <input
+                id="vaccine-name"
+                type="text"
+                placeholder="e.g. DTPw / DTPa-1, BCG"
+                value={data.vaccine_name || ''}
+                onChange={(e) => update('vaccine_name', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="dose-number">Dose</label>
+              <input
+                id="dose-number"
+                type="text"
+                placeholder="e.g. Dose 1, Booster"
+                value={data.dose_number || ''}
+                onChange={(e) => update('dose_number', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="target-disease">Target Diseases</label>
+            <input
+              id="target-disease"
+              type="text"
+              placeholder="e.g. Diphtheria, Tetanus, Pertussis"
+              value={data.target_disease || ''}
+              onChange={(e) => update('target_disease', e.target.value)}
+            />
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="status">Vaccine Status *</label>
+              <select
+                id="status"
+                value={data.status || 'Given'}
+                onChange={(e) => update('status', e.target.value)}
+              >
+                <option value="Given">Given ✅</option>
+                <option value="Scheduled">Scheduled 📅</option>
+                <option value="Delayed">Delayed ⏳</option>
+                <option value="Skipped">Skipped ❌</option>
+              </select>
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="given-date">Date Administered</label>
+              <input
+                id="given-date"
+                type="date"
+                value={data.given_date || todayStr}
+                onChange={(e) => update('given_date', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="due-date">Due Date</label>
+              <input
+                id="due-date"
+                type="date"
+                value={data.due_date || todayStr}
+                onChange={(e) => update('due_date', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="batch-no">Batch / Lot Number</label>
+              <input
+                id="batch-no"
+                type="text"
+                placeholder="e.g. SERUM-IND-4491"
+                value={data.batch_no || ''}
+                onChange={(e) => update('batch_no', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="doctor-name">Pediatrician / Clinic</label>
+              <input
+                id="doctor-name"
+                type="text"
+                placeholder="Dr. Anand Rao"
+                value={data.doctor_name || ''}
+                onChange={(e) => update('doctor_name', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="cost">Cost (₹ / $)</label>
+              <input
+                id="cost"
+                type="number"
+                placeholder="1200"
+                value={data.cost || ''}
+                onChange={(e) => update('cost', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="reactions">Post-Vaccine Reaction / Notes</label>
+            <textarea
+              id="reactions"
+              value={data.reactions || ''}
+              onChange={(e) => update('reactions', e.target.value)}
+              placeholder="Low-grade fever, fussiness, paracetamol drops given..."
+            />
+          </div>
+        </>
+      );
+
+    case 'child-growth':
+      return (
+        <>
+          <div className={formStyles.field}>
+            <label htmlFor="growth-date">Recorded Date *</label>
+            <input
+              id="growth-date"
+              type="date"
+              value={data.recorded_date || todayStr}
+              onChange={(e) => update('recorded_date', e.target.value)}
+            />
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="weight-kg">Baby Weight (kg) *</label>
+              <input
+                id="weight-kg"
+                type="number"
+                step="0.01"
+                placeholder="e.g. 4.75"
+                value={data.weight_kg || ''}
+                onChange={(e) => update('weight_kg', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="length-cm">Length / Height (cm)</label>
+              <input
+                id="length-cm"
+                type="number"
+                step="0.1"
+                placeholder="e.g. 55.5"
+                value={data.length_cm || ''}
+                onChange={(e) => update('length_cm', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="head-circ">Head Circumference (cm)</label>
+            <input
+              id="head-circ"
+              type="number"
+              step="0.1"
+              placeholder="e.g. 37.8"
+              value={data.head_circumference_cm || ''}
+              onChange={(e) => update('head_circumference_cm', e.target.value)}
+            />
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="notes">Growth Observations / Notes</label>
+            <textarea
+              id="notes"
+              value={data.notes || ''}
+              onChange={(e) => update('notes', e.target.value)}
+              placeholder="e.g., Weight velocity is healthy. Feeding well and alert."
+            />
+          </div>
+        </>
+      );
+
+    case 'baby-profile':
+      return (
+        <>
+          <div className={formStyles.field}>
+            <label htmlFor="baby-name">Baby’s Name *</label>
+            <input
+              id="baby-name"
+              type="text"
+              placeholder="e.g. Aarav Sharma"
+              value={data.baby_name || ''}
+              onChange={(e) => update('baby_name', e.target.value)}
+            />
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="gender">Gender</label>
+              <select
+                id="gender"
+                value={data.gender || 'Boy'}
+                onChange={(e) => update('gender', e.target.value)}
+              >
+                <option value="Boy">Boy 👦</option>
+                <option value="Girl">Girl 👧</option>
+                <option value="Other">Other ✨</option>
+              </select>
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="birth-date">Birth Date</label>
+              <input
+                id="birth-date"
+                type="date"
+                value={data.birth_date || todayStr}
+                onChange={(e) => update('birth_date', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="birth-weight">Birth Weight (grams)</label>
+              <input
+                id="birth-weight"
+                type="number"
+                placeholder="e.g. 3250"
+                value={data.birth_weight_grams || ''}
+                onChange={(e) => update('birth_weight_grams', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="birth-length">Birth Length (cm)</label>
+              <input
+                id="birth-length"
+                type="number"
+                step="0.1"
+                placeholder="e.g. 50"
+                value={data.birth_length_cm || ''}
+                onChange={(e) => update('birth_length_cm', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.fieldRow}>
+            <div className={formStyles.field}>
+              <label htmlFor="pediatrician">Pediatrician Name</label>
+              <input
+                id="pediatrician"
+                type="text"
+                placeholder="Dr. Anand Rao"
+                value={data.pediatrician_name || ''}
+                onChange={(e) => update('pediatrician_name', e.target.value)}
+              />
+            </div>
+            <div className={formStyles.field}>
+              <label htmlFor="hospital">Hospital / Clinic</label>
+              <input
+                id="hospital"
+                type="text"
+                placeholder="Cloudnine Hospital"
+                value={data.hospital_name || ''}
+                onChange={(e) => update('hospital_name', e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className={formStyles.field}>
+            <label htmlFor="notes">Birth Story & Memories</label>
+            <textarea
+              id="notes"
+              value={data.notes || ''}
+              onChange={(e) => update('notes', e.target.value)}
+              placeholder="Smooth delivery, loud first cry, immediate skin-to-skin bonding..."
             />
           </div>
         </>
