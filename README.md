@@ -145,8 +145,8 @@ When a user signs in and completes onboarding, a spreadsheet named `Bump Book �
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/makadiyaparth/pregnancy-journey-tracker.git
-   cd pregnancy-journey-tracker
+   git clone https://github.com/makadiyaparth/bump-book.git
+   cd bump-book
    ```
 
 2. **Install dependencies:**
@@ -185,7 +185,7 @@ When a user signs in and completes onboarding, a spreadsheet named `Bump Book �
 ## 📁 Project Structure
 
 ```text
-pregnancy-journey-tracker/
+bump-book/
 ├── src/
 │   ├── app/
 │   │   ├── (auth)/                 # Authenticated protected application routes

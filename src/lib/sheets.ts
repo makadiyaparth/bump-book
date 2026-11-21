@@ -3,7 +3,7 @@
    CRUD operations for all sheet tabs
    ============================================ */
 
-import { google } from 'googleapis';
+import { google, sheets_v4 } from 'googleapis';
 import { SHEET_HEADERS, SHEET_TABS } from './types';
 
 // In-memory cache for user's spreadsheetId to avoid repeated Drive API calls
@@ -420,7 +420,7 @@ export class SheetsService {
     const babyStatsSheetId = titleMap.get(SHEET_TABS.babyStats);
 
     // 2. Delete existing Overview tab if it already exists, and create a fresh one at index 0
-    const setupRequests: any[] = [];
+    const setupRequests: sheets_v4.Schema$Request[] = [];
     if (existingOverviewId !== undefined) {
       setupRequests.push({
         deleteSheet: { sheetId: existingOverviewId },
@@ -449,7 +449,7 @@ export class SheetsService {
     const newOverviewSheet = addSheetRes.data.replies?.find(
       (r) => r.addSheet
     )?.addSheet?.properties;
-    const overviewSheetId = newOverviewSheet?.sheetId!;
+    const overviewSheetId = newOverviewSheet?.sheetId ?? 0;
 
     // 3. Write Formulas, Labels, and Queries into the Overview sheet
     const overviewValues: (string | number)[][] = [
@@ -534,7 +534,7 @@ export class SheetsService {
     });
 
     // 4. Build formatting, styling, merges, column dimensions, and embedded charts
-    const formatRequests: any[] = [
+    const formatRequests: sheets_v4.Schema$Request[] = [
       // Title banner merge (A1:H1)
       {
         mergeCells: {

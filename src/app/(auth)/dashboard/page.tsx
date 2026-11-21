@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useMemo, useState } from 'react';
-import { Plus, X, Check, Sparkles, TrendingUp, ShieldCheck, Heart, Award } from 'lucide-react';
+import { Plus, X, Check, Sparkles, ShieldCheck } from 'lucide-react';
 import { getPregnancyInfo, getTrimesterLabel, getBabyMilestone } from '@/lib/pregnancy';
 import { getPostpartumGuide, formatBabyAge } from '@/lib/postpartum';
 import { formatDate, formatDateShort, formatRelativeDate, getGreeting, generateId, now } from '@/lib/utils';
@@ -191,7 +191,7 @@ export default function DashboardPage() {
   const postpartumGuide = useMemo(() => {
     if (!pregnancyInfo?.postpartumWeek) return null;
     return getPostpartumGuide(pregnancyInfo.postpartumWeek);
-  }, [pregnancyInfo?.postpartumWeek]);
+  }, [pregnancyInfo]);
 
   const openDeliveryModal = () => {
     setDeliveryDateInput(
@@ -286,7 +286,7 @@ export default function DashboardPage() {
     const deliv = new Date(deliveryDateInput);
     if (isNaN(deliv.getTime()) || isNaN(due.getTime())) return null;
     return Math.floor((deliv.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
-  }, [pregnancy?.dueDate, deliveryDateInput]);
+  }, [pregnancy, deliveryDateInput]);
 
   const previewGestation = useMemo(() => {
     if (!pregnancy?.lmpDate || !deliveryDateInput) return null;
@@ -297,7 +297,7 @@ export default function DashboardPage() {
     const w = Math.floor(totalDays / 7);
     const d = totalDays % 7;
     return { w, d, totalDays };
-  }, [pregnancy?.lmpDate, deliveryDateInput]);
+  }, [pregnancy, deliveryDateInput]);
 
   const latestHealth = useMemo<HealthStats | null>(() => {
     if (!healthRows || healthRows.length === 0) return null;

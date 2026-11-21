@@ -4,7 +4,7 @@
    milestones, and recovery helpers.
    ============================================ */
 
-import type { VaccinationRecord, ChildGrowth } from './types';
+import type { VaccinationRecord } from './types';
 import { generateId, now } from './utils';
 
 export interface StandardVaccineDefinition {

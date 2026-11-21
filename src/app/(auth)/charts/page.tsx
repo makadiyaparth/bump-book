@@ -15,11 +15,11 @@ import {
   Filler,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { TrendingUp, Heart, Activity, Baby, Sparkles, ShieldCheck } from 'lucide-react';
+import { TrendingUp, Heart, Activity, Baby } from 'lucide-react';
 import { formatDateShort } from '@/lib/utils';
 import JourneyLoader from '@/components/JourneyLoader';
 import { useSheetData } from '@/lib/useSheetData';
-import { WHO_GROWTH_PERCENTILES_50TH, formatBabyAge } from '@/lib/postpartum';
+import { WHO_GROWTH_PERCENTILES_50TH } from '@/lib/postpartum';
 import styles from './page.module.css';
 
 ChartJS.register(
@@ -73,7 +73,7 @@ export default function ChartsPage() {
   const { data: pregRows } = useSheetData('Pregnancy');
   const { data: healthRows, isLoading: healthLoading } = useSheetData('HealthStats');
   const { data: babyRows, isLoading: babyLoading } = useSheetData('BabyStats');
-  const { data: growthRows, isLoading: growthLoading } = useSheetData('ChildGrowth');
+  const { data: growthRows } = useSheetData('ChildGrowth');
   const { data: babyProfileRows } = useSheetData('BabyProfile');
 
   const pregProfile = useMemo(() => pregRows?.[0] || null, [pregRows]);

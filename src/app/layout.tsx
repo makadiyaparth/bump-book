@@ -30,7 +30,7 @@ const handwriting = Caveat({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://pregnancy-journey-tracker.vercel.app'),
+  metadataBase: new URL(process.env.NEXTAUTH_URL || 'https://bump-book.vercel.app'),
   title: {
     default: 'Bump Book — Pregnancy Journey Tracker',
     template: '%s | Bump Book',

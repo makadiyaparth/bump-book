@@ -164,7 +164,7 @@ export default function PrivacyPolicyPage() {
             <p className={styles.paragraph}>
               If you have any questions, feedback, or concerns regarding this Privacy Policy or your data, please contact the developer via our{' '}
               <a
-                href="https://github.com/makadiyaparth/pregnancy-journey-tracker"
+                href="https://github.com/makadiyaparth/bump-book"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.link}
